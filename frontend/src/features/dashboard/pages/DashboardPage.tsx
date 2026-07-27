@@ -7,6 +7,7 @@ import EuroRoundedIcon from "@mui/icons-material/EuroRounded";
 
 import PageContainer from "../../../shared/components/PageContainer";
 import StatCard from "../../../shared/components/StatCard";
+import { dashboardData } from "../data/dashboardData";
 
 export default function DashboardPage() {
   return (
@@ -22,7 +23,7 @@ export default function DashboardPage() {
         <Grid size={{ xs: 12, md: 6, lg: 3 }}>
           <StatCard
             title="Socios"
-            value={227}
+            value={dashboardData.socios}
             icon={<GroupsRoundedIcon color="primary" />}
           />
         </Grid>
@@ -30,7 +31,7 @@ export default function DashboardPage() {
         <Grid size={{ xs: 12, md: 6, lg: 3 }}>
           <StatCard
             title="Pagados"
-            value={198}
+            value={dashboardData.pagados}
             icon={<PaidRoundedIcon color="success" />}
           />
         </Grid>
@@ -38,7 +39,7 @@ export default function DashboardPage() {
         <Grid size={{ xs: 12, md: 6, lg: 3 }}>
           <StatCard
             title="Pendientes"
-            value={29}
+            value={dashboardData.pendientes}
             icon={<WarningAmberRoundedIcon color="warning" />}
           />
         </Grid>
@@ -46,7 +47,7 @@ export default function DashboardPage() {
         <Grid size={{ xs: 12, md: 6, lg: 3 }}>
           <StatCard
             title="Recaudado"
-            value="2.270 €"
+            value={`${dashboardData.recaudado} €`}
             icon={<EuroRoundedIcon color="primary" />}
           />
         </Grid>

@@ -13,15 +13,15 @@ export default function StatCard({
 }: StatCardProps) {
   return (
     <Card
-      elevation={2}
+      elevation={0}
       sx={{
-        borderRadius: 3,
-        height: "100%",
-        transition: "0.25s",
+        borderRadius: 4,
+        border: "1px solid #E2E8F0",
+        transition: "all .25s ease",
 
         "&:hover": {
           transform: "translateY(-4px)",
-          boxShadow: 6,
+          boxShadow: "0 12px 30px rgba(0,0,0,.08)",
         },
       }}
     >
@@ -38,7 +38,19 @@ export default function StatCard({
             {title}
           </Typography>
 
-          {icon}
+          <Box
+  sx={{
+    width: 50,
+    height: 50,
+    borderRadius: "50%",
+    backgroundColor: "#EFF6FF",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  }}
+>
+  {icon}
+</Box>
         </Box>
 
         <Typography
