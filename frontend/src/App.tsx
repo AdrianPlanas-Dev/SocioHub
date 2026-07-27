@@ -1,7 +1,7 @@
+import AppRouter from "./app/AppRouter";
+
 function App() {
-  return (
-    <h1>PeñaGest</h1>
-  );
+  return <AppRouter />;
 }
 
 export default App;
