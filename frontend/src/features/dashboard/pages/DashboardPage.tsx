@@ -8,10 +8,14 @@ import EuroRoundedIcon from "@mui/icons-material/EuroRounded";
 import PageContainer from "../../../shared/components/PageContainer";
 import StatCard from "../../../shared/components/StatCard";
 import { dashboardData } from "../data/dashboardData";
+import { dashboardStats } from "../constants/dashboardStats";
 
 export default function DashboardPage() {
   return (
-    <PageContainer title="Inicio">
+<PageContainer
+  title="Inicio"
+  subtitle="Resumen general de la peña."
+>
       <Typography
         variant="h6"
         mb={4}
@@ -20,38 +24,19 @@ export default function DashboardPage() {
       </Typography>
 
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
-          <StatCard
-            title="Socios"
-            value={dashboardData.socios}
-            icon={<GroupsRoundedIcon color="primary" />}
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
-          <StatCard
-            title="Pagados"
-            value={dashboardData.pagados}
-            icon={<PaidRoundedIcon color="success" />}
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
-          <StatCard
-            title="Pendientes"
-            value={dashboardData.pendientes}
-            icon={<WarningAmberRoundedIcon color="warning" />}
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
-          <StatCard
-            title="Recaudado"
-            value={`${dashboardData.recaudado} €`}
-            icon={<EuroRoundedIcon color="primary" />}
-          />
-        </Grid>
-      </Grid>
+  {dashboardStats.map((stat) => (
+    <Grid
+      key={stat.title}
+      size={{ xs: 12, md: 6, lg: 3 }}
+    >
+      <StatCard
+        title={stat.title}
+        value={stat.value}
+        icon={stat.icon}
+      />
+    </Grid>
+  ))}
+</Grid>
     </PageContainer>
   );
 }
