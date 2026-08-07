@@ -52,9 +52,7 @@ export default function SociosTable({
             >
               <TableCell>{socio.numero}</TableCell>
 
-              <TableCell>
-                {socio.nombre} {socio.apellidos}
-              </TableCell>
+              <TableCell>{socio.nombre}</TableCell>
 
               <TableCell>{socio.telefono}</TableCell>
 

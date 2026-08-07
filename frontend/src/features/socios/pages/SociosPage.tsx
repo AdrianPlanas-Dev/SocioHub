@@ -22,7 +22,7 @@ const {
   setCampoBusqueda,
 } = useSocios();
 
-  return (
+    return (
     <PageContainer
       title="Socios"
       subtitle="Gestiona todos los socios de la peña."
@@ -43,17 +43,14 @@ const {
       >
         <Box sx={{ flex: 2 }}>
           <SociosTable
-              socios={socios}
-              onEdit={(socio) => setSelectedSocio(socio)}
+            socios={socios}
+            onEdit={(socio) => setSelectedSocio(socio)}
           />
         </Box>
 
         <Box sx={{ flex: 1 }}>
-          <SocioPanel
-            socio={selectedSocio}
-          />
+          <SocioPanel socio={selectedSocio} />
         </Box>
-
       </Box>
     </PageContainer>
   );
