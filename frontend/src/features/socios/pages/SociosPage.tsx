@@ -11,11 +11,19 @@ import SocioPanel from "../components/SocioPanel";
 import SocioFormDialog from "../components/SocioFormDialog";
 
 import type { Socio } from "../types/Socio";
-import { crearSocio } from "../../../services/api";
+
+import {
+  crearSocio,
+  actualizarSocio,
+} from "../../../services/api";
+
 import { useSocios } from "../hooks/useSocios";
 
 export default function SociosPage() {
   const [selectedSocio, setSelectedSocio] =
+    useState<Socio | null>(null);
+
+  const [socioEditando, setSocioEditando] =
     useState<Socio | null>(null);
 
   const [dialogAbierto, setDialogAbierto] =
@@ -30,21 +38,47 @@ export default function SociosPage() {
     recargarSocios,
   } = useSocios();
 
-  async function handleCrearSocio(datos: {
+  function abrirNuevoSocio() {
+    setSocioEditando(null);
+    setDialogAbierto(true);
+  }
+
+  function abrirEditarSocio(socio: Socio) {
+    setSocioEditando(socio);
+    setDialogAbierto(true);
+  }
+
+  async function handleGuardarSocio(datos: {
     nombre: string;
     apellidos: string;
     telefono: string;
     estado: "Pagado" | "Pendiente";
   }) {
     try {
-      await crearSocio(datos);
+      if (socioEditando) {
+        await actualizarSocio(
+          socioEditando.numero,
+          datos
+        );
+      } else {
+        await crearSocio(datos);
+      }
 
       await recargarSocios();
 
       setDialogAbierto(false);
+      setSocioEditando(null);
     } catch (error) {
-      console.error("Error creando socio:", error);
+      console.error(
+        "Error guardando socio:",
+        error
+      );
     }
+  }
+
+  function cerrarDialogo() {
+    setDialogAbierto(false);
+    setSocioEditando(null);
   }
 
   return (
@@ -57,7 +91,7 @@ export default function SociosPage() {
         campoBusqueda={campoBusqueda}
         onBusquedaChange={setBusqueda}
         onCampoBusquedaChange={setCampoBusqueda}
-        onNuevoSocio={() => setDialogAbierto(true)}
+        onNuevoSocio={abrirNuevoSocio}
       />
 
       <Box
@@ -70,9 +104,7 @@ export default function SociosPage() {
         <Box sx={{ flex: 2 }}>
           <SociosTable
             socios={socios}
-            onEdit={(socio) =>
-              setSelectedSocio(socio)
-            }
+            onEdit={abrirEditarSocio}
           />
         </Box>
 
@@ -85,10 +117,10 @@ export default function SociosPage() {
 
       <SocioFormDialog
         open={dialogAbierto}
-        onClose={() => setDialogAbierto(false)}
-        onSave={handleCrearSocio}
+        socio={socioEditando}
+        onClose={cerrarDialogo}
+        onSave={handleGuardarSocio}
       />
     </PageContainer>
   );
 }
-

@@ -31,3 +31,31 @@ export async function crearSocio(datos: {
 
   return response.json();
 }
+
+export async function actualizarSocio(
+  numero: number,
+  datos: {
+    nombre: string;
+    apellidos: string;
+    telefono: string;
+    estado: "Pagado" | "Pendiente";
+  }
+) {
+  const response = await fetch(
+    `${API_URL}/socios/${numero}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(datos),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Error actualizando socio");
+  }
+
+  return response.json();
+}
+

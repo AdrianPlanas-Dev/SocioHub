@@ -2,6 +2,7 @@
 import {
   getSocios,
   crearSocio,
+  actualizarSocio,
 } from "../services/googleSheetsService.js";
 
 export async function obtenerSocios(req, res) {
@@ -49,3 +50,41 @@ export async function crearNuevoSocio(req, res) {
     });
   }
 }
+
+export async function editarSocio(req, res) {
+  try {
+    const { numero } = req.params;
+
+    const {
+      nombre,
+      apellidos,
+      telefono,
+      estado,
+    } = req.body;
+
+    if (!nombre) {
+      return res.status(400).json({
+        error: "El nombre es obligatorio",
+      });
+    }
+
+    const socio = await actualizarSocio(
+      numero,
+      {
+        nombre,
+        apellidos: apellidos ?? "",
+        telefono: telefono ?? "",
+        estado: estado ?? "Pendiente",
+      }
+    );
+
+    res.json(socio);
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Error actualizando el socio",
+    });
+  }
+}
+

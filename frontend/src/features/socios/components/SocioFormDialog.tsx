@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Button,
@@ -6,12 +6,15 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
   MenuItem,
+  TextField,
 } from "@mui/material";
+
+import type { Socio } from "../types/Socio";
 
 interface SocioFormDialogProps {
   open: boolean;
+  socio?: Socio | null;
   onClose: () => void;
   onSave: (datos: {
     nombre: string;
@@ -23,26 +26,45 @@ interface SocioFormDialogProps {
 
 export default function SocioFormDialog({
   open,
+  socio,
   onClose,
   onSave,
 }: SocioFormDialogProps) {
   const [nombre, setNombre] = useState("");
   const [apellidos, setApellidos] = useState("");
   const [telefono, setTelefono] = useState("");
-  const [estado, setEstado] = useState<
-    "Pagado" | "Pendiente"
-  >("Pendiente");
+  const [estado, setEstado] =
+    useState<"Pagado" | "Pendiente">("Pendiente");
+
+  const editando = Boolean(socio);
+
+  useEffect(() => {
+    if (socio) {
+      setNombre(socio.nombre);
+      setApellidos(socio.apellidos);
+      setTelefono(socio.telefono);
+      setEstado(socio.estado);
+    } else {
+      setNombre("");
+      setApellidos("");
+      setTelefono("");
+      setEstado("Pendiente");
+    }
+  }, [socio, open]);
 
   const handleClose = () => {
     setNombre("");
     setApellidos("");
     setTelefono("");
     setEstado("Pendiente");
+
     onClose();
   };
 
   const handleSubmit = () => {
-    if (!nombre.trim()) return;
+    if (!nombre.trim()) {
+      return;
+    }
 
     onSave({
       nombre: nombre.trim(),
@@ -50,8 +72,6 @@ export default function SocioFormDialog({
       telefono: telefono.trim(),
       estado,
     });
-
-    handleClose();
   };
 
   return (
@@ -62,7 +82,7 @@ export default function SocioFormDialog({
       maxWidth="sm"
     >
       <DialogTitle>
-        Añadir socio
+        {editando ? "Editar socio" : "Añadir socio"}
       </DialogTitle>
 
       <DialogContent>
@@ -99,7 +119,9 @@ export default function SocioFormDialog({
           value={estado}
           onChange={(e) =>
             setEstado(
-              e.target.value as "Pagado" | "Pendiente"
+              e.target.value as
+                | "Pagado"
+                | "Pendiente"
             )
           }
         >
@@ -123,7 +145,9 @@ export default function SocioFormDialog({
           onClick={handleSubmit}
           disabled={!nombre.trim()}
         >
-          Guardar socio
+          {editando
+            ? "Guardar cambios"
+            : "Guardar socio"}
         </Button>
       </DialogActions>
     </Dialog>

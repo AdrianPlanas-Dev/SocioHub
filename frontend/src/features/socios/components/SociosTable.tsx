@@ -32,7 +32,9 @@ export default function SociosTable({
             <TableCell>Nombre</TableCell>
             <TableCell>Teléfono</TableCell>
             <TableCell>Estado</TableCell>
-            <TableCell align="center">Acciones</TableCell>
+            <TableCell align="center">
+              Acciones
+            </TableCell>
           </TableRow>
         </TableHead>
 
@@ -50,11 +52,17 @@ export default function SociosTable({
                 },
               }}
             >
-              <TableCell>{socio.numero}</TableCell>
+              <TableCell>
+                {socio.numero}
+              </TableCell>
 
-              <TableCell>{socio.nombre}</TableCell>
+              <TableCell>
+                {socio.nombre} {socio.apellidos}
+              </TableCell>
 
-              <TableCell>{socio.telefono}</TableCell>
+              <TableCell>
+                {socio.telefono}
+              </TableCell>
 
               <TableCell>
                 <Chip
@@ -69,22 +77,26 @@ export default function SociosTable({
               </TableCell>
 
               <TableCell align="center">
+                {/* EDITAR */}
                 <IconButton
                   size="small"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Más adelante abrirá el modo edición
+                    onEdit(socio);
                   }}
                 >
                   <EditRoundedIcon />
                 </IconButton>
 
+                {/* ELIMINAR */}
                 <IconButton
                   size="small"
                   color="error"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Más adelante eliminaremos el socio
+
+                    // Más adelante implementaremos
+                    // la eliminación del socio.
                   }}
                 >
                   <DeleteRoundedIcon />

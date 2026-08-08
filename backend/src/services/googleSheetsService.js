@@ -1,3 +1,4 @@
+
 import { sheets } from "../config/google.js";
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
@@ -11,7 +12,9 @@ export async function getSocios() {
 
   const rows = response.data.values ?? [];
 
-  if (rows.length <= 1) return [];
+  if (rows.length <= 1) {
+    return [];
+  }
 
   const [, ...data] = rows;
 
@@ -67,3 +70,65 @@ export async function crearSocio({
     estado,
   };
 }
+
+export async function actualizarSocio(
+  numero,
+  {
+    nombre,
+    apellidos,
+    telefono,
+    estado,
+  }
+) {
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${SHEET_NAME}!A:E`,
+  });
+
+  const rows = response.data.values ?? [];
+
+  if (rows.length <= 1) {
+    throw new Error("No hay socios para actualizar");
+  }
+
+  const indice = rows.findIndex(
+    (row, index) =>
+      index > 0 &&
+      Number(row[0]) === Number(numero)
+  );
+
+  if (indice === -1) {
+    throw new Error(
+      `No se encontró el socio número ${numero}`
+    );
+  }
+
+  const numeroFila = indice + 1;
+
+  const rango = `${SHEET_NAME}!A${numeroFila}:E${numeroFila}`;
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SPREADSHEET_ID,
+    range: rango,
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: [[
+        numero,
+        nombre,
+        apellidos,
+        telefono,
+        estado,
+      ]],
+    },
+  });
+
+  return {
+    id: Number(numero),
+    numero: Number(numero),
+    nombre,
+    apellidos,
+    telefono,
+    estado,
+  };
+}
+
