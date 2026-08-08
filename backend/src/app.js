@@ -10,10 +10,4 @@ app.use(express.json());
 
 app.use("/socios", sociosRoutes);
 
-app.get("/", (req, res) => {
-  res.json({
-    message: "SocioHub API funcionando 🚀",
-  });
-});
-
 export default app;

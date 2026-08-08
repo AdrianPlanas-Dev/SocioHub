@@ -1,3 +1,4 @@
+
 const API_URL = "http://localhost:3000";
 
 export async function getSocios() {
@@ -5,6 +6,27 @@ export async function getSocios() {
 
   if (!response.ok) {
     throw new Error("Error obteniendo socios");
+  }
+
+  return response.json();
+}
+
+export async function crearSocio(datos: {
+  nombre: string;
+  apellidos: string;
+  telefono: string;
+  estado: "Pagado" | "Pendiente";
+}) {
+  const response = await fetch(`${API_URL}/socios`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(datos),
+  });
+
+  if (!response.ok) {
+    throw new Error("Error creando socio");
   }
 
   return response.json();

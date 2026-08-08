@@ -1,3 +1,4 @@
+
 import {
   Box,
   Button,
@@ -15,6 +16,7 @@ interface Props {
   campoBusqueda: string;
   onBusquedaChange: (value: string) => void;
   onCampoBusquedaChange: (value: string) => void;
+  onNuevoSocio: () => void;
 }
 
 const camposBusqueda = [
@@ -31,6 +33,7 @@ export default function SociosToolbar({
   campoBusqueda,
   onBusquedaChange,
   onCampoBusquedaChange,
+  onNuevoSocio,
 }: Props) {
   return (
     <Box
@@ -80,9 +83,11 @@ export default function SociosToolbar({
       <Button
         variant="contained"
         startIcon={<AddRoundedIcon />}
+        onClick={onNuevoSocio}
       >
         Nuevo socio
       </Button>
     </Box>
   );
 }
+
