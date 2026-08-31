@@ -1,4 +1,3 @@
-
 import {
   Box,
   Button,
@@ -9,23 +8,47 @@ import {
   TextField,
 } from "@mui/material";
 
+import RefreshRoundedIcon from "@mui/icons-material/RefreshRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 
 interface Props {
   busqueda: string;
   campoBusqueda: string;
-  onBusquedaChange: (value: string) => void;
-  onCampoBusquedaChange: (value: string) => void;
+  onBusquedaChange: (
+    value: string
+  ) => void;
+  onCampoBusquedaChange: (
+    value: string
+  ) => void;
   onNuevoSocio: () => void;
+  onActualizar: () => void;
 }
 
 const camposBusqueda = [
-  { value: "todos", label: "Todos los campos" },
-  { value: "numero", label: "Nº de socio" },
-  { value: "nombre", label: "Nombre" },
-  { value: "apellidos", label: "Apellidos" },
-  { value: "telefono", label: "Teléfono" },
-  { value: "estado", label: "Estado" },
+  {
+    value: "todos",
+    label: "Todos los campos",
+  },
+  {
+    value: "numero",
+    label: "Nº de socio",
+  },
+  {
+    value: "nombre",
+    label: "Nombre",
+  },
+  {
+    value: "apellidos",
+    label: "Apellidos",
+  },
+  {
+    value: "telefono",
+    label: "Teléfono",
+  },
+  {
+    value: "estado",
+    label: "Estado",
+  },
 ];
 
 export default function SociosToolbar({
@@ -34,6 +57,7 @@ export default function SociosToolbar({
   onBusquedaChange,
   onCampoBusquedaChange,
   onNuevoSocio,
+  onActualizar,
 }: Props) {
   return (
     <Box
@@ -46,33 +70,55 @@ export default function SociosToolbar({
         alignItems: "center",
       }}
     >
-      <FormControl size="small" sx={{ minWidth: 190 }}>
-        <InputLabel>Buscar por</InputLabel>
+
+      {/* =========================
+          BUSCAR POR
+          ========================= */}
+
+      <FormControl
+        size="small"
+        sx={{
+          minWidth: 190,
+        }}
+      >
+        <InputLabel>
+          Buscar por
+        </InputLabel>
 
         <Select
           value={campoBusqueda}
           label="Buscar por"
           onChange={(e) =>
-            onCampoBusquedaChange(e.target.value)
+            onCampoBusquedaChange(
+              e.target.value
+            )
           }
         >
-          {camposBusqueda.map((campo) => (
-            <MenuItem
-              key={campo.value}
-              value={campo.value}
-            >
-              {campo.label}
-            </MenuItem>
-          ))}
+          {camposBusqueda.map(
+            (campo) => (
+              <MenuItem
+                key={campo.value}
+                value={campo.value}
+              >
+                {campo.label}
+              </MenuItem>
+            )
+          )}
         </Select>
       </FormControl>
+
+      {/* =========================
+          BUSCADOR
+          ========================= */}
 
       <TextField
         placeholder="Buscar..."
         size="small"
         value={busqueda}
         onChange={(e) =>
-          onBusquedaChange(e.target.value)
+          onBusquedaChange(
+            e.target.value
+          )
         }
         sx={{
           flex: 1,
@@ -80,14 +126,34 @@ export default function SociosToolbar({
         }}
       />
 
+      {/* =========================
+          NUEVO SOCIO
+          ========================= */}
+
       <Button
         variant="contained"
-        startIcon={<AddRoundedIcon />}
+        startIcon={
+          <AddRoundedIcon />
+        }
         onClick={onNuevoSocio}
       >
         Nuevo socio
       </Button>
+
+      {/* =========================
+          ACTUALIZAR
+          ========================= */}
+
+      <Button
+        variant="outlined"
+        startIcon={
+          <RefreshRoundedIcon />
+        }
+        onClick={onActualizar}
+      >
+        Actualizar
+      </Button>
+
     </Box>
   );
 }
-

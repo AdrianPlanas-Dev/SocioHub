@@ -3,7 +3,13 @@ import {
   getSocios,
   crearSocio,
   actualizarSocio,
+  eliminarSocio,
 } from "../services/googleSheetsService.js";
+
+
+// =========================
+// OBTENER SOCIOS
+// =========================
 
 export async function obtenerSocios(req, res) {
   try {
@@ -19,12 +25,20 @@ export async function obtenerSocios(req, res) {
   }
 }
 
-export async function crearNuevoSocio(req, res) {
+
+// =========================
+// CREAR SOCIO
+// =========================
+
+export async function crearSocioController(req, res) {
   try {
     const {
       nombre,
       apellidos,
+      dni,
       telefono,
+      direccion,
+      fechaNacimiento,
       estado,
     } = req.body;
 
@@ -37,7 +51,10 @@ export async function crearNuevoSocio(req, res) {
     const socio = await crearSocio({
       nombre,
       apellidos: apellidos ?? "",
+      dni: dni ?? "",
       telefono: telefono ?? "",
+      direccion: direccion ?? "",
+      fechaNacimiento: fechaNacimiento ?? "",
       estado: estado ?? "Pendiente",
     });
 
@@ -46,10 +63,15 @@ export async function crearNuevoSocio(req, res) {
     console.error(error);
 
     res.status(500).json({
-      error: "Error creando el socio",
+      error: "Error creando socio",
     });
   }
 }
+
+
+// =========================
+// EDITAR SOCIO
+// =========================
 
 export async function editarSocio(req, res) {
   try {
@@ -58,7 +80,10 @@ export async function editarSocio(req, res) {
     const {
       nombre,
       apellidos,
+      dni,
       telefono,
+      direccion,
+      fechaNacimiento,
       estado,
     } = req.body;
 
@@ -73,7 +98,10 @@ export async function editarSocio(req, res) {
       {
         nombre,
         apellidos: apellidos ?? "",
+        dni: dni ?? "",
         telefono: telefono ?? "",
+        direccion: direccion ?? "",
+        fechaNacimiento: fechaNacimiento ?? "",
         estado: estado ?? "Pendiente",
       }
     );
@@ -88,3 +116,26 @@ export async function editarSocio(req, res) {
   }
 }
 
+
+// =========================
+// ELIMINAR SOCIO
+// =========================
+
+export async function borrarSocio(req, res) {
+  try {
+    const { numero } = req.params;
+
+    const resultado = await eliminarSocio(numero);
+
+    res.json({
+      message: "Socio eliminado correctamente",
+      ...resultado,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Error eliminando el socio",
+    });
+  }
+}
