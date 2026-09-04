@@ -5,7 +5,10 @@ import {
   obtenerCuotas,
   obtenerEstado,
   obtenerEstados,
+  obtenerPagosController,
   registrarPagoController,
+  modificarPagoController,
+  anularPagoController,
 } from "../controllers/cuotasController.js";
 
 const router = express.Router();
@@ -17,6 +20,15 @@ const router = express.Router();
 router.get(
   "/anios",
   obtenerAnios
+);
+
+// =========================
+// TODOS LOS PAGOS
+// =========================
+
+router.get(
+  "/pagos",
+  obtenerPagosController
 );
 
 // =========================
@@ -44,6 +56,24 @@ router.get(
 router.post(
   "/pago/:numero",
   registrarPagoController
+);
+
+// =========================
+// MODIFICAR PAGO
+// =========================
+
+router.put(
+  "/pago/:numero",
+  modificarPagoController
+);
+
+// =========================
+// ANULAR PAGO
+// =========================
+
+router.delete(
+  "/pago/:numero",
+  anularPagoController
 );
 
 // =========================

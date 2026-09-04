@@ -1,4 +1,3 @@
-
 import { sheets } from "../config/google.js";
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
@@ -20,6 +19,25 @@ const MESES = [
   "octubre",
   "noviembre",
   "diciembre",
+];
+
+// =========================
+// COLUMNAS DE LOS MESES
+// =========================
+
+const COLUMNAS_MESES = [
+  "D",
+  "E",
+  "F",
+  "G",
+  "H",
+  "I",
+  "J",
+  "K",
+  "L",
+  "M",
+  "N",
+  "O",
 ];
 
 // =========================
@@ -103,7 +121,6 @@ export async function obtenerAniosCuotas() {
 export async function obtenerCuotasAnio(
   anio
 ) {
-  // Protección contra NaN
   const anioNumero =
     Number(anio);
 
@@ -135,9 +152,6 @@ export async function obtenerCuotasAnio(
     return [];
   }
 
-  // Fila 1 → encabezados
-  // Fila 2 → meses
-  // Desde fila 3 → socios
   const [
     ,
     ,
@@ -221,12 +235,9 @@ export async function obtenerEstadosSocios() {
   const mesActual =
     ahora.getMonth();
 
-  // Comprobamos primero qué hojas existen
   const anios =
     await obtenerAniosCuotas();
 
-  // Si no existe la hoja del año actual,
-  // devolvemos un resultado vacío.
   if (
     !anios.includes(
       anioActual
@@ -414,14 +425,82 @@ export async function obtenerEstadoSocio(
 }
 
 // =========================
-// REGISTRAR PAGO
+// BUSCAR FILA DE UN SOCIO
 // =========================
 
-export async function registrarPago(
+async function obtenerFilaSocio(
+  nombreHoja,
+  numeroSocio
+) {
+  const response =
+    await sheets.spreadsheets.values.get({
+      spreadsheetId:
+        SPREADSHEET_ID,
+      range:
+        `'${nombreHoja}'!A:O`,
+    });
+
+  const rows =
+    response.data.values ?? [];
+
+  for (
+    let i = 2;
+    i < rows.length;
+    i++
+  ) {
+    const numeroFila =
+      Number(
+        rows[i]?.[0]
+      );
+
+    if (
+      !Number.isNaN(
+        numeroFila
+      ) &&
+      numeroFila ===
+      numeroSocio
+    ) {
+      return {
+        fila: i + 1,
+        row: rows[i],
+      };
+    }
+  }
+
+  return null;
+}
+
+// =========================
+// VALIDAR IMPORTE
+// =========================
+
+function obtenerImporte(cantidad) {
+  const importe =
+    Number(
+      String(cantidad)
+        .replace(",", ".")
+    );
+
+  if (
+    Number.isNaN(importe) ||
+    importe <= 0
+  ) {
+    throw new Error(
+      "La cantidad debe ser un número mayor que 0"
+    );
+  }
+
+  return importe;
+}
+
+// =========================
+// VALIDAR DATOS DEL PAGO
+// =========================
+
+function validarDatosPago(
   numero,
   anio,
-  mes,
-  cantidad
+  mes
 ) {
   const numeroSocio =
     Number(numero);
@@ -446,7 +525,9 @@ export async function registrarPago(
   if (
     !Number.isInteger(
       anioNumero
-    )
+    ) ||
+    anioNumero < 2000 ||
+    anioNumero > 2100
   ) {
     throw new Error(
       "Año no válido"
@@ -454,6 +535,9 @@ export async function registrarPago(
   }
 
   if (
+    !Number.isInteger(
+      mesNumero
+    ) ||
     mesNumero < 1 ||
     mesNumero > 12
   ) {
@@ -462,23 +546,23 @@ export async function registrarPago(
     );
   }
 
-  const importe =
-    Number(
-      String(cantidad)
-        .replace(",", ".")
-    );
+  return {
+    numeroSocio,
+    anioNumero,
+    mesNumero,
+  };
+}
 
-  if (
-    Number.isNaN(importe) ||
-    importe <= 0
-  ) {
-    throw new Error(
-      "La cantidad debe ser un número mayor que 0"
-    );
-  }
+// =========================
+// COMPROBAR QUE EXISTE
+// LA HOJA
+// =========================
 
+async function obtenerHojaCuotas(
+  anio
+) {
   const nombreHoja =
-    `Cuotas ${anioNumero}`;
+    `Cuotas ${anio}`;
 
   const spreadsheet =
     await sheets.spreadsheets.get({
@@ -501,83 +585,130 @@ export async function registrarPago(
     );
   }
 
-  const response =
-    await sheets.spreadsheets.values.get({
-      spreadsheetId:
-        SPREADSHEET_ID,
-      range:
-        `'${nombreHoja}'!A:O`,
-    });
+  return nombreHoja;
+}
+// =========================
+// OBTENER TODOS LOS PAGOS
+// =========================
 
-  const rows =
-    response.data.values ?? [];
+export async function obtenerPagos() {
+  const anios = await obtenerAniosCuotas();
 
-  if (rows.length < 3) {
-    throw new Error(
-      "La hoja de cuotas no contiene socios"
-    );
+  if (anios.length === 0) {
+    return [];
   }
 
-  let filaSocio = -1;
+  // Cargamos todas las hojas de cuotas en paralelo.
+  // Antes se consultaban una detrás de otra.
+  const resultados = await Promise.all(
+    anios.map(async (anio) => {
+      const cuotas = await obtenerCuotasAnio(anio);
+      return { anio, cuotas };
+    })
+  );
 
-  for (
-    let i = 2;
-    i < rows.length;
-    i++
-  ) {
-    const numeroFila =
-      Number(
-        rows[i]?.[0]
-      );
+  const pagos = [];
 
-    if (
-      !Number.isNaN(
-        numeroFila
-      ) &&
-      numeroFila ===
-        numeroSocio
-    ) {
-      filaSocio =
-        i + 1;
+  for (const { anio, cuotas } of resultados) {
+    for (const socio of cuotas) {
+      for (let mes = 0; mes < 12; mes++) {
+        const nombreMes = MESES[mes];
+        const valor = socio[nombreMes];
 
-      break;
+        if (mesEstaPagado(valor)) {
+          pagos.push({
+            numero: socio.numero,
+            nombre: socio.nombre,
+            anio,
+            mes: mes + 1,
+            nombreMes,
+            cantidad: Number(
+              String(valor).replace(",", ".")
+            ),
+          });
+        }
+      }
     }
   }
 
-  if (
-    filaSocio === -1
-  ) {
+  return pagos;
+}
+
+
+// =========================
+// REGISTRAR PAGO
+// =========================
+
+export async function registrarPago(
+  numero,
+  anio,
+  mes,
+  cantidad
+) {
+  const {
+    numeroSocio,
+    anioNumero,
+    mesNumero,
+  } = validarDatosPago(
+    numero,
+    anio,
+    mes
+  );
+
+  const importe =
+    obtenerImporte(
+      cantidad
+    );
+
+  const nombreHoja =
+    await obtenerHojaCuotas(
+      anioNumero
+    );
+
+  const resultado =
+    await obtenerFilaSocio(
+      nombreHoja,
+      numeroSocio
+    );
+
+  if (!resultado) {
     throw new Error(
       `No se encontró el socio ${numeroSocio}`
     );
   }
 
-  const columnasMes = [
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "I",
-    "J",
-    "K",
-    "L",
-    "M",
-    "N",
-    "O",
-  ];
-
   const columna =
-    columnasMes[
-      mesNumero - 1
+    COLUMNAS_MESES[
+    mesNumero - 1
     ];
+
+  const valorActual =
+    resultado.row[
+    mesNumero + 2
+    ];
+
+  if (
+    mesEstaPagado(
+      valorActual
+    )
+  ) {
+    const importeActual =
+      Number(
+        String(valorActual)
+          .replace(",", ".")
+      );
+
+    throw new Error(
+      `El socio ya tiene registrado un pago de ${importeActual} € en ${MESES[mesNumero - 1]} de ${anioNumero}`
+    );
+  }
 
   await sheets.spreadsheets.values.update({
     spreadsheetId:
       SPREADSHEET_ID,
 
     range:
-      `'${nombreHoja}'!${columna}${filaSocio}`,
+      `'${nombreHoja}'!${columna}${resultado.fila}`,
 
     valueInputOption:
       "USER_ENTERED",
@@ -601,5 +732,263 @@ export async function registrarPago(
 
     cantidad:
       importe,
+  };
+}
+
+// =========================
+// MODIFICAR PAGO
+// =========================
+
+export async function modificarPago(
+  numero,
+  anio,
+  mes,
+  nuevoAnio,
+  nuevoMes,
+  nuevaCantidad
+) {
+  const datosActuales =
+    validarDatosPago(
+      numero,
+      anio,
+      mes
+    );
+
+  const datosNuevos =
+    validarDatosPago(
+      numero,
+      nuevoAnio,
+      nuevoMes
+    );
+
+  const importe =
+    obtenerImporte(
+      nuevaCantidad
+    );
+
+  const hojaActual =
+    await obtenerHojaCuotas(
+      datosActuales.anioNumero
+    );
+
+  const hojaNueva =
+    await obtenerHojaCuotas(
+      datosNuevos.anioNumero
+    );
+
+  const filaActual =
+    await obtenerFilaSocio(
+      hojaActual,
+      datosActuales.numeroSocio
+    );
+
+  if (!filaActual) {
+    throw new Error(
+      `No se encontró el socio ${datosActuales.numeroSocio}`
+    );
+  }
+
+  const filaNueva =
+    await obtenerFilaSocio(
+      hojaNueva,
+      datosNuevos.numeroSocio
+    );
+
+  if (!filaNueva) {
+    throw new Error(
+      `No se encontró el socio ${datosNuevos.numeroSocio}`
+    );
+  }
+
+  const columnaActual =
+    COLUMNAS_MESES[
+    datosActuales.mesNumero - 1
+    ];
+
+  const columnaNueva =
+    COLUMNAS_MESES[
+    datosNuevos.mesNumero - 1
+    ];
+
+  const valorActual =
+    filaActual.row[
+    datosActuales.mesNumero + 2
+    ];
+
+  if (
+    !mesEstaPagado(
+      valorActual
+    )
+  ) {
+    throw new Error(
+      "No existe un pago registrado en el mes indicado"
+    );
+  }
+
+  // Si se está moviendo el pago
+  // a otro mes, comprobamos que
+  // el nuevo destino esté libre.
+  if (
+    datosActuales.anioNumero !==
+    datosNuevos.anioNumero ||
+    datosActuales.mesNumero !==
+    datosNuevos.mesNumero
+  ) {
+    const valorDestino =
+      filaNueva.row[
+      datosNuevos.mesNumero + 2
+      ];
+
+    if (
+      mesEstaPagado(
+        valorDestino
+      )
+    ) {
+      throw new Error(
+        `Ya existe un pago registrado en ${MESES[datosNuevos.mesNumero - 1]} de ${datosNuevos.anioNumero}`
+      );
+    }
+
+    // Primero vaciamos el pago anterior.
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId:
+        SPREADSHEET_ID,
+
+      range:
+        `'${hojaActual}'!${columnaActual}${filaActual.fila}`,
+    });
+
+    // Después escribimos el nuevo pago.
+    await sheets.spreadsheets.values.update({
+      spreadsheetId:
+        SPREADSHEET_ID,
+
+      range:
+        `'${hojaNueva}'!${columnaNueva}${filaNueva.fila}`,
+
+      valueInputOption:
+        "USER_ENTERED",
+
+      requestBody: {
+        values: [
+          [importe],
+        ],
+      },
+    });
+  } else {
+    // Mismo mes: simplemente
+    // modificamos el importe.
+    await sheets.spreadsheets.values.update({
+      spreadsheetId:
+        SPREADSHEET_ID,
+
+      range:
+        `'${hojaActual}'!${columnaActual}${filaActual.fila}`,
+
+      valueInputOption:
+        "USER_ENTERED",
+
+      requestBody: {
+        values: [
+          [importe],
+        ],
+      },
+    });
+  }
+
+  return {
+    numero:
+      datosActuales.numeroSocio,
+
+    anio:
+      datosNuevos.anioNumero,
+
+    mes:
+      datosNuevos.mesNumero,
+
+    cantidad:
+      importe,
+  };
+}
+
+// =========================
+// ANULAR PAGO
+// =========================
+
+export async function anularPago(
+  numero,
+  anio,
+  mes
+) {
+  const {
+    numeroSocio,
+    anioNumero,
+    mesNumero,
+  } = validarDatosPago(
+    numero,
+    anio,
+    mes
+  );
+
+  const nombreHoja =
+    await obtenerHojaCuotas(
+      anioNumero
+    );
+
+  const resultado =
+    await obtenerFilaSocio(
+      nombreHoja,
+      numeroSocio
+    );
+
+  if (!resultado) {
+    throw new Error(
+      `No se encontró el socio ${numeroSocio}`
+    );
+  }
+
+  const valorActual =
+    resultado.row[
+    mesNumero + 2
+    ];
+
+  if (
+    !mesEstaPagado(
+      valorActual
+    )
+  ) {
+    throw new Error(
+      "No existe un pago registrado en el mes indicado"
+    );
+  }
+
+  const columna =
+    COLUMNAS_MESES[
+    mesNumero - 1
+    ];
+
+  await sheets.spreadsheets.values.clear({
+    spreadsheetId:
+      SPREADSHEET_ID,
+
+    range:
+      `'${nombreHoja}'!${columna}${resultado.fila}`,
+  });
+
+  return {
+    numero:
+      numeroSocio,
+
+    anio:
+      anioNumero,
+
+    mes:
+      mesNumero,
+
+    cantidadAnulada:
+      Number(
+        String(valorActual)
+          .replace(",", ".")
+      ),
   };
 }

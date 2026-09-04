@@ -41,6 +41,7 @@ export async function getSocios() {
   }));
 }
 
+
 // =========================
 // CREAR SOCIO
 // =========================
@@ -54,18 +55,26 @@ export async function crearSocio({
   fechaNacimiento,
   estado,
 }) {
+  // =========================
+  // 1. OBTENER ÚLTIMO Nº DE SOCIO
+  // =========================
+
   const socios = await getSocios();
 
   const ultimoNumero =
     socios.length > 0
       ? Math.max(
-          ...socios.map(
-            (socio) => socio.numero
-          )
+        ...socios.map(
+          (socio) => socio.numero
         )
+      )
       : 0;
 
   const numero = ultimoNumero + 1;
+
+  // =========================
+  // 2. CREAR SOCIO EN "SOCIOS"
+  // =========================
 
   const nuevaFila = [
     numero,
@@ -87,6 +96,88 @@ export async function crearSocio({
       values: [nuevaFila],
     },
   });
+
+  // =========================
+  // 3. AÑADIR SOCIO A CUOTAS
+  // =========================
+
+  const anioActual =
+    new Date().getFullYear();
+
+  const nombreHojaCuotas =
+    `Cuotas ${anioActual}`;
+
+  // Calculamos la edad
+  let edad = "";
+
+  if (fechaNacimiento) {
+    const nacimiento =
+      new Date(fechaNacimiento);
+
+    if (!Number.isNaN(nacimiento.getTime())) {
+      const hoy = new Date();
+
+      edad =
+        hoy.getFullYear() -
+        nacimiento.getFullYear();
+
+      const mes =
+        hoy.getMonth() -
+        nacimiento.getMonth();
+
+      if (
+        mes < 0 ||
+        (
+          mes === 0 &&
+          hoy.getDate() <
+          nacimiento.getDate()
+        )
+      ) {
+        edad--;
+      }
+    }
+  }
+
+  // A:O
+  //
+  // A = Nº
+  // B = Nombre
+  // C = Edad
+  // D:O = Enero-Diciembre
+  //
+  // Los meses empiezan vacíos.
+
+  const filaCuotas = [
+    numero,
+    `${nombre} ${apellidos}`.trim(),
+    edad,
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+  ];
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `'${nombreHojaCuotas}'!A:O`,
+    valueInputOption: "USER_ENTERED",
+    insertDataOption: "INSERT_ROWS",
+    requestBody: {
+      values: [filaCuotas],
+    },
+  });
+
+  // =========================
+  // 4. DEVOLVER SOCIO CREADO
+  // =========================
 
   return {
     id: numero,
@@ -240,12 +331,12 @@ export async function eliminarSocio(numero) {
   if (!hoja) {
     throw new Error(
       `No se encontró la hoja "${SHEET_NAME}". ` +
-        `Hojas disponibles: ${hojas
-          .map(
-            (h) =>
-              `"${h.properties?.title}"`
-          )
-          .join(", ")}`
+      `Hojas disponibles: ${hojas
+        .map(
+          (h) =>
+            `"${h.properties?.title}"`
+        )
+        .join(", ")}`
     );
   }
 

@@ -1,4 +1,3 @@
-
 const API_URL = "http://localhost:3000";
 
 // =========================
@@ -18,7 +17,6 @@ export async function getSocios() {
 
   return response.json();
 }
-
 
 // =========================
 // CREAR SOCIO
@@ -52,7 +50,6 @@ export async function crearSocio(datos: {
 
   return response.json();
 }
-
 
 // =========================
 // ACTUALIZAR SOCIO
@@ -90,7 +87,6 @@ export async function actualizarSocio(
   return response.json();
 }
 
-
 // =========================
 // ELIMINAR SOCIO
 // =========================
@@ -114,7 +110,6 @@ export async function eliminarSocio(
   return response.json();
 }
 
-
 // =========================
 // OBTENER ESTADO DE CUOTAS
 // DE UN SOCIO
@@ -136,7 +131,6 @@ export async function obtenerEstadoSocio(
   return response.json();
 }
 
-
 // =========================
 // OBTENER CUOTAS DE UN AÑO
 // =========================
@@ -157,7 +151,6 @@ export async function obtenerCuotasAnio(
   return response.json();
 }
 
-
 // =========================
 // OBTENER ESTADOS DE TODOS
 // LOS SOCIOS
@@ -176,7 +169,6 @@ export async function obtenerEstadosSocios() {
 
   return response.json();
 }
-
 
 // =========================
 // REGISTRAR PAGO
@@ -208,22 +200,125 @@ export async function registrarPago(
   if (!response.ok) {
     throw new Error(
       data.error ??
-        "Error registrando el pago"
+      "Error registrando el pago"
     );
   }
 
   return data;
 }
-// ========================= 
-// OBTENER AÑOS DISPONIBLES 
-// DE CUOTAS 
+
+// =========================
+// OBTENER AÑOS DISPONIBLES
+// DE CUOTAS
 // =========================
 
-export async function obtenerAniosCuotas(){
-  const response = await fetch( `${API_URL}/cuotas/anios` );
+export async function obtenerAniosCuotas() {
+  const response = await fetch(
+    `${API_URL}/cuotas/anios`
+  );
 
   if (!response.ok) {
-    throw new Error("Error obteniendo los años de cuotas");
+    throw new Error(
+      "Error obteniendo los años de cuotas"
+    );
   }
+
   return response.json();
+}
+
+// =========================
+// OBTENER TODOS LOS PAGOS
+// =========================
+
+export async function obtenerPagos() {
+  const response = await fetch(
+    `${API_URL}/cuotas/pagos`
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.error ??
+      "Error obteniendo los pagos"
+    );
+  }
+
+  return data;
+}
+
+// =========================
+// MODIFICAR PAGO
+// =========================
+
+export async function modificarPago(
+  numero: number,
+  anio: number,
+  mes: number,
+  nuevoAnio: number,
+  nuevoMes: number,
+  nuevaCantidad: number
+) {
+  const response = await fetch(
+    `${API_URL}/cuotas/pago/${numero}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        anio,
+        mes,
+        nuevoAnio,
+        nuevoMes,
+        nuevaCantidad,
+      }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.error ??
+      "Error modificando el pago"
+    );
+  }
+
+  return data;
+}
+
+// =========================
+// ANULAR PAGO
+// =========================
+
+export async function anularPago(
+  numero: number,
+  anio: number,
+  mes: number
+) {
+  const response = await fetch(
+    `${API_URL}/cuotas/pago/${numero}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        anio,
+        mes,
+      }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.error ??
+      "Error anulando el pago"
+    );
+  }
+
+  return data;
 }

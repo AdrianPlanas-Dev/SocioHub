@@ -47,6 +47,124 @@ const MESES = [
   "diciembre",
 ];
 
+
+function calcularEdad(fechaNacimiento: string) {
+  if (!fechaNacimiento) {
+    return null;
+  }
+
+  let nacimiento: Date;
+
+  // =========================
+  // FORMATO DD/MM/YYYY
+  // =========================
+
+  if (fechaNacimiento.includes("/")) {
+    const partes = fechaNacimiento.split("/");
+
+    if (partes.length !== 3) {
+      return null;
+    }
+
+    const dia = Number(partes[0]);
+    const mes = Number(partes[1]);
+    const anio = Number(partes[2]);
+
+    if (
+      !Number.isInteger(dia) ||
+      !Number.isInteger(mes) ||
+      !Number.isInteger(anio)
+    ) {
+      return null;
+    }
+
+    // En JavaScript los meses empiezan en 0
+    nacimiento = new Date(
+      anio,
+      mes - 1,
+      dia
+    );
+  }
+
+  // =========================
+  // FORMATO YYYY-MM-DD
+  // =========================
+
+  else if (fechaNacimiento.includes("-")) {
+    const partes = fechaNacimiento.split("-");
+
+    if (partes.length !== 3) {
+      return null;
+    }
+
+    const anio = Number(partes[0]);
+    const mes = Number(partes[1]);
+    const dia = Number(partes[2]);
+
+    if (
+      !Number.isInteger(dia) ||
+      !Number.isInteger(mes) ||
+      !Number.isInteger(anio)
+    ) {
+      return null;
+    }
+
+    nacimiento = new Date(
+      anio,
+      mes - 1,
+      dia
+    );
+  }
+
+  else {
+    return null;
+  }
+
+  // =========================
+  // COMPROBAR FECHA VÁLIDA
+  // =========================
+
+  if (Number.isNaN(nacimiento.getTime())) {
+    return null;
+  }
+
+  const hoy = new Date();
+
+  // =========================
+  // CALCULAR EDAD
+  // =========================
+
+  let edad =
+    hoy.getFullYear() -
+    nacimiento.getFullYear();
+
+  const mesActual =
+    hoy.getMonth();
+
+  const mesNacimiento =
+    nacimiento.getMonth();
+
+  const diaActual =
+    hoy.getDate();
+
+  const diaNacimiento =
+    nacimiento.getDate();
+
+  // Todavía no ha cumplido años este año
+  if (
+    mesActual < mesNacimiento ||
+    (
+      mesActual === mesNacimiento &&
+      diaActual < diaNacimiento
+    )
+  ) {
+    edad--;
+  }
+
+  return edad;
+}
+
+
 export default function SocioPanel({
   socio,
   onEditar,
@@ -90,10 +208,10 @@ export default function SocioPanel({
 
         const aniosNumeros = Array.isArray(anios)
           ? anios
-              .map((anio) => Number(anio))
-              .filter((anio) =>
-                Number.isInteger(anio)
-              )
+            .map((anio) => Number(anio))
+            .filter((anio) =>
+              Number.isInteger(anio)
+            )
           : [];
 
         setAniosDisponibles(
@@ -180,6 +298,8 @@ export default function SocioPanel({
 
   const estaPagado =
     estadoCuotas === "Pagado";
+
+  const edad = calcularEdad(socio.fechaNacimiento);
 
   // =========================
   // REGISTRAR PAGO
@@ -290,6 +410,12 @@ export default function SocioPanel({
               sx={{ mt: 1 }}
             >
               Socio nº {socio.numero}
+            </Typography>
+
+            <Typography
+              color="text.secondary"
+            >
+              Edad: {edad !== null ? edad : "No indicada"}
             </Typography>
           </Box>
 
@@ -444,11 +570,11 @@ export default function SocioPanel({
                         •{" "}
                         {pendiente.nombreMes
                           ? pendiente.nombreMes
-                              .charAt(0)
-                              .toUpperCase() +
-                            pendiente.nombreMes.slice(
-                              1
-                            )
+                            .charAt(0)
+                            .toUpperCase() +
+                          pendiente.nombreMes.slice(
+                            1
+                          )
                           : "Mes desconocido"}{" "}
                         {pendiente.anio}
                       </Typography>

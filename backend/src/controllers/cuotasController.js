@@ -3,7 +3,10 @@ import {
   obtenerCuotasAnio,
   obtenerEstadosSocios,
   obtenerEstadoSocio,
+  obtenerPagos,
   registrarPago,
+  modificarPago,
+  anularPago,
 } from "../services/cuotasService.js";
 
 // =========================
@@ -14,9 +17,10 @@ export async function obtenerCuotas(req, res) {
   try {
     const { anio } = req.params;
 
-    const cuotas = await obtenerCuotasAnio(
-      Number(anio)
-    );
+    const cuotas =
+      await obtenerCuotasAnio(
+        Number(anio)
+      );
 
     res.json(cuotas);
   } catch (error) {
@@ -26,13 +30,15 @@ export async function obtenerCuotas(req, res) {
     );
 
     res.status(500).json({
-      error: "Error obteniendo las cuotas",
+      error:
+        error.message ??
+        "Error obteniendo las cuotas",
     });
   }
 }
 
 // =========================
-// OBTENER AÑOS DE CUOTAS
+// OBTENER AÑOS
 // =========================
 
 export async function obtenerAnios(req, res) {
@@ -49,14 +55,41 @@ export async function obtenerAnios(req, res) {
 
     res.status(500).json({
       error:
+        error.message ??
         "Error obteniendo los años de las cuotas",
     });
   }
 }
 
 // =========================
-// OBTENER ESTADO DE TODOS
-// LOS SOCIOS
+// OBTENER PAGOS
+// =========================
+
+export async function obtenerPagosController(
+  req,
+  res
+) {
+  try {
+    const pagos =
+      await obtenerPagos();
+
+    res.json(pagos);
+  } catch (error) {
+    console.error(
+      "Error obteniendo pagos:",
+      error
+    );
+
+    res.status(500).json({
+      error:
+        error.message ??
+        "Error obteniendo los pagos",
+    });
+  }
+}
+
+// =========================
+// OBTENER ESTADOS DE TODOS
 // =========================
 
 export async function obtenerEstados(req, res) {
@@ -73,6 +106,7 @@ export async function obtenerEstados(req, res) {
 
     res.status(500).json({
       error:
+        error.message ??
         "Error obteniendo los estados de los socios",
     });
   }
@@ -100,6 +134,7 @@ export async function obtenerEstado(req, res) {
 
     res.status(500).json({
       error:
+        error.message ??
         "Error obteniendo el estado del socio",
     });
   }
@@ -122,10 +157,6 @@ export async function registrarPagoController(
       cantidad,
     } = req.body;
 
-    // =========================
-    // VALIDACIONES
-    // =========================
-
     if (
       anio === undefined ||
       mes === undefined ||
@@ -137,68 +168,12 @@ export async function registrarPagoController(
       });
     }
 
-    const numeroSocio =
-      Number(numero);
-
-    const anioNumero =
-      Number(anio);
-
-    const mesNumero =
-      Number(mes);
-
-    const cantidadNumero =
-      Number(
-        String(cantidad).replace(",", ".")
-      );
-
-    if (
-      Number.isNaN(numeroSocio) ||
-      numeroSocio <= 0
-    ) {
-      return res.status(400).json({
-        error: "Número de socio no válido",
-      });
-    }
-
-    if (
-      Number.isNaN(anioNumero) ||
-      anioNumero < 2000
-    ) {
-      return res.status(400).json({
-        error: "Año no válido",
-      });
-    }
-
-    if (
-      Number.isNaN(mesNumero) ||
-      mesNumero < 1 ||
-      mesNumero > 12
-    ) {
-      return res.status(400).json({
-        error: "Mes no válido",
-      });
-    }
-
-    if (
-      Number.isNaN(cantidadNumero) ||
-      cantidadNumero <= 0
-    ) {
-      return res.status(400).json({
-        error:
-          "La cantidad debe ser mayor que 0",
-      });
-    }
-
-    // =========================
-    // REGISTRAR EN GOOGLE SHEETS
-    // =========================
-
     const resultado =
       await registrarPago(
-        numeroSocio,
-        anioNumero,
-        mesNumero,
-        cantidadNumero
+        numero,
+        anio,
+        mes,
+        cantidad
       );
 
     res.json(resultado);
@@ -208,10 +183,115 @@ export async function registrarPagoController(
       error
     );
 
-    res.status(500).json({
+    res.status(400).json({
       error:
-        error.message ||
+        error.message ??
         "Error registrando el pago",
+    });
+  }
+}
+
+// =========================
+// MODIFICAR PAGO
+// =========================
+
+export async function modificarPagoController(
+  req,
+  res
+) {
+  try {
+    const { numero } = req.params;
+
+    const {
+      anio,
+      mes,
+      nuevoAnio,
+      nuevoMes,
+      nuevaCantidad,
+    } = req.body;
+
+    if (
+      anio === undefined ||
+      mes === undefined ||
+      nuevoAnio === undefined ||
+      nuevoMes === undefined ||
+      nuevaCantidad === undefined
+    ) {
+      return res.status(400).json({
+        error:
+          "Año, mes, nuevo año, nuevo mes y nueva cantidad son obligatorios",
+      });
+    }
+
+    const resultado =
+      await modificarPago(
+        numero,
+        anio,
+        mes,
+        nuevoAnio,
+        nuevoMes,
+        nuevaCantidad
+      );
+
+    res.json(resultado);
+  } catch (error) {
+    console.error(
+      "Error modificando pago:",
+      error
+    );
+
+    res.status(400).json({
+      error:
+        error.message ??
+        "Error modificando el pago",
+    });
+  }
+}
+
+// =========================
+// ANULAR PAGO
+// =========================
+
+export async function anularPagoController(
+  req,
+  res
+) {
+  try {
+    const { numero } = req.params;
+
+    const {
+      anio,
+      mes,
+    } = req.body;
+
+    if (
+      anio === undefined ||
+      mes === undefined
+    ) {
+      return res.status(400).json({
+        error:
+          "Año y mes son obligatorios",
+      });
+    }
+
+    const resultado =
+      await anularPago(
+        numero,
+        anio,
+        mes
+      );
+
+    res.json(resultado);
+  } catch (error) {
+    console.error(
+      "Error anulando pago:",
+      error
+    );
+
+    res.status(400).json({
+      error:
+        error.message ??
+        "Error anulando el pago",
     });
   }
 }

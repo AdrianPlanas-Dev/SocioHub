@@ -1,15 +1,8 @@
 export interface Pago {
-  id: number;
-
-  socioId: number;
-
+  numero: number;
+  nombre: string;
   anio: number;
-
-  pagado: boolean;
-
-  fechaPago?: string;
-
-  importe: number;
-
-  observaciones?: string;
+  mes: number;
+  nombreMes: string;
+  cantidad: number;
 }
