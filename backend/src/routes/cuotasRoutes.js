@@ -9,6 +9,8 @@ import {
   registrarPagoController,
   modificarPagoController,
   anularPagoController,
+  crearCuotasAnioController,
+  eliminarCuotasAnioController,
 } from "../controllers/cuotasController.js";
 
 const router = express.Router();
@@ -20,6 +22,24 @@ const router = express.Router();
 router.get(
   "/anios",
   obtenerAnios
+);
+
+// =========================
+// CREAR AÑO DE CUOTAS
+// =========================
+
+router.post(
+  "/anio",
+  crearCuotasAnioController
+);
+
+// =========================
+// ELIMINAR AÑO DE CUOTAS
+// =========================
+
+router.delete(
+  "/anio/:anio",
+  eliminarCuotasAnioController
 );
 
 // =========================
@@ -81,8 +101,7 @@ router.delete(
 // =========================
 
 router.get(
-  "/:anio",
+  "/cuotas/:anio",
   obtenerCuotas
 );
-
 export default router;

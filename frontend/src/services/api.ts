@@ -322,3 +322,61 @@ export async function anularPago(
 
   return data;
 }
+// =========================
+// CREAR AÑO DE CUOTAS
+// =========================
+
+export async function crearCuotasAnio(
+  anio: number
+) {
+  const response = await fetch(
+    `${API_URL}/cuotas/anio`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        anio,
+      }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.error ??
+      "Error creando el año de cuotas"
+    );
+  }
+
+  return data;
+}
+
+
+// =========================
+// ELIMINAR AÑO DE CUOTAS
+// =========================
+
+export async function eliminarCuotasAnio(
+  anio: number
+) {
+  const response = await fetch(
+    `${API_URL}/cuotas/anio/${anio}`,
+    {
+      method: "DELETE",
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.error ??
+      "Error eliminando el año de cuotas"
+    );
+  }
+
+  return data;
+}

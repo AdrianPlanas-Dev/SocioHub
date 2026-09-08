@@ -7,6 +7,7 @@ import SociosPage from "../features/socios/pages/SociosPage";
 import PagosPage from "../features/pagos/pages/PagosPage";
 import EstadisticasPage from "../features/estadisticas/pages/EstadisticasPage";
 import ConfiguracionPage from "../features/configuracion/pages/ConfiguracionPage";
+import AniosCuotasPage from "../features/configuracion/pages/AniosCuotasPage";
 import NotFoundPage from "../pages/NotFoundPage";
 
 export default function AppRouter() {
@@ -18,6 +19,12 @@ export default function AppRouter() {
           <Route path="/socios" element={<SociosPage />} />
           <Route path="/pagos" element={<PagosPage />} />
           <Route path="/estadisticas" element={<EstadisticasPage />} />
+
+          <Route
+            path="/configuracion/anios-cuotas"
+            element={<AniosCuotasPage />}
+          />
+
           <Route path="/configuracion" element={<ConfiguracionPage />} />
         </Route>
 

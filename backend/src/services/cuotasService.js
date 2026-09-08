@@ -1,4 +1,5 @@
 import { sheets } from "../config/google.js";
+import { getSocios } from "./googleSheetsService.js";
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 
@@ -990,5 +991,399 @@ export async function anularPago(
         String(valorActual)
           .replace(",", ".")
       ),
+  };
+}
+// =========================
+// VALIDAR AÑO DE CUOTAS
+// =========================
+
+function validarAnioCuotas(anio) {
+  const anioNumero = Number(anio);
+
+  if (
+    !Number.isInteger(anioNumero) ||
+    anioNumero < 2000 ||
+    anioNumero > 2100
+  ) {
+    throw new Error(
+      `Año de cuotas no válido: ${anio}`
+    );
+  }
+
+  return anioNumero;
+}
+
+
+// =========================
+// CREAR NUEVA HOJA DE CUOTAS
+// =========================
+
+export async function crearCuotasAnio(anio) {
+  const anioNumero =
+    validarAnioCuotas(anio);
+
+  const nombreNuevaHoja =
+    `Cuotas ${anioNumero}`;
+
+  // =========================
+  // 1. OBTENER HOJAS
+  // =========================
+
+  const spreadsheet =
+    await sheets.spreadsheets.get({
+      spreadsheetId:
+        SPREADSHEET_ID,
+      fields:
+        "sheets(properties(sheetId,title))",
+    });
+
+  const hojas =
+    spreadsheet.data.sheets ?? [];
+
+  // =========================
+  // 2. COMPROBAR SI YA EXISTE
+  // =========================
+
+  const hojaExistente =
+    hojas.find(
+      (hoja) =>
+        hoja.properties?.title ===
+        nombreNuevaHoja
+    );
+
+  if (hojaExistente) {
+    throw new Error(
+      `La hoja "${nombreNuevaHoja}" ya existe`
+    );
+  }
+
+  // =========================
+  // 3. BUSCAR UNA HOJA DE
+  //    CUOTAS COMO PLANTILLA
+  // =========================
+
+  const hojasCuotas =
+    hojas
+      .filter(
+        (hoja) =>
+          typeof hoja.properties?.title ===
+            "string" &&
+          /^Cuotas \d{4}$/.test(
+            hoja.properties.title
+          )
+      )
+      .sort(
+        (a, b) => {
+          const anioA =
+            Number(
+              a.properties.title.replace(
+                "Cuotas ",
+                ""
+              )
+            );
+
+          const anioB =
+            Number(
+              b.properties.title.replace(
+                "Cuotas ",
+                ""
+              )
+            );
+
+          return anioB - anioA;
+        }
+      );
+
+  if (hojasCuotas.length === 0) {
+    throw new Error(
+      "No existe ninguna hoja de cuotas que pueda utilizarse como plantilla"
+    );
+  }
+
+  const hojaPlantilla =
+    hojasCuotas[0];
+
+  const sheetIdPlantilla =
+    hojaPlantilla.properties?.sheetId;
+
+  if (
+    sheetIdPlantilla === undefined
+  ) {
+    throw new Error(
+      "La hoja de cuotas plantilla no tiene sheetId"
+    );
+  }
+
+  // =========================
+  // 4. OBTENER SOCIOS
+  // =========================
+
+  const socios =
+    await getSocios();
+
+  // =========================
+  // 5. DUPLICAR LA HOJA
+  // =========================
+
+  const resultado =
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId:
+        SPREADSHEET_ID,
+
+      requestBody: {
+        requests: [
+          {
+            duplicateSheet: {
+              sourceSheetId:
+                Number(
+                  sheetIdPlantilla
+                ),
+
+              newSheetName:
+                nombreNuevaHoja,
+            },
+          },
+        ],
+      },
+    });
+
+  const nuevaSheetId =
+    resultado.data.replies?.[0]
+      ?.duplicateSheet
+      ?.properties
+      ?.sheetId;
+
+  if (
+    nuevaSheetId === undefined
+  ) {
+    throw new Error(
+      `No se pudo crear la hoja "${nombreNuevaHoja}"`
+    );
+  }
+
+  // =========================
+  // 6. LIMPIAR SOCIOS Y PAGOS
+  // =========================
+  //
+  // Conservamos las filas 1 y 2
+  // porque contienen la estructura
+  // y cabeceras de la hoja.
+  //
+  // Limpiamos desde la fila 3.
+  //
+
+  await sheets.spreadsheets.values.clear({
+    spreadsheetId:
+      SPREADSHEET_ID,
+
+    range:
+      `'${nombreNuevaHoja}'!A3:O`,
+  });
+
+  // =========================
+  // 7. PREPARAR SOCIOS
+  // =========================
+
+  const filasSocios =
+    socios.map(
+      (socio) => {
+        let edad = "";
+
+        if (
+          socio.fechaNacimiento
+        ) {
+          const nacimiento =
+            new Date(
+              socio.fechaNacimiento
+            );
+
+          if (
+            !Number.isNaN(
+              nacimiento.getTime()
+            )
+          ) {
+            const hoy =
+              new Date();
+
+            edad =
+              hoy.getFullYear() -
+              nacimiento.getFullYear();
+
+            const diferenciaMes =
+              hoy.getMonth() -
+              nacimiento.getMonth();
+
+            if (
+              diferenciaMes < 0 ||
+              (
+                diferenciaMes === 0 &&
+                hoy.getDate() <
+                  nacimiento.getDate()
+              )
+            ) {
+              edad--;
+            }
+          }
+        }
+
+        return [
+          socio.numero,
+          `${socio.nombre} ${socio.apellidos}`.trim(),
+          edad,
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+        ];
+      }
+    );
+
+  // =========================
+  // 8. INSERTAR SOCIOS
+  // =========================
+
+  if (filasSocios.length > 0) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId:
+        SPREADSHEET_ID,
+
+      range:
+        `'${nombreNuevaHoja}'!A3:O${filasSocios.length + 2}`,
+
+      valueInputOption:
+        "USER_ENTERED",
+
+      requestBody: {
+        values:
+          filasSocios,
+      },
+    });
+  }
+
+  return {
+    anio:
+      anioNumero,
+
+    nombreHoja:
+      nombreNuevaHoja,
+
+    socios:
+      socios.length,
+  };
+}
+
+
+// =========================
+// ELIMINAR HOJA DE CUOTAS
+// =========================
+
+export async function eliminarCuotasAnio(
+  anio
+) {
+  const anioNumero =
+    validarAnioCuotas(anio);
+
+  const nombreHoja =
+    `Cuotas ${anioNumero}`;
+
+  // =========================
+  // 1. OBTENER HOJAS
+  // =========================
+
+  const spreadsheet =
+    await sheets.spreadsheets.get({
+      spreadsheetId:
+        SPREADSHEET_ID,
+
+      fields:
+        "sheets(properties(sheetId,title))",
+    });
+
+  const hojas =
+    spreadsheet.data.sheets ?? [];
+
+  const hojasCuotas =
+    hojas.filter(
+      (hoja) =>
+        typeof hoja.properties?.title ===
+          "string" &&
+        /^Cuotas \d{4}$/.test(
+          hoja.properties.title
+        )
+    );
+
+  // =========================
+  // 2. PROTEGER LA ÚLTIMA HOJA
+  // =========================
+
+  if (
+    hojasCuotas.length <= 1
+  ) {
+    throw new Error(
+      "No se puede eliminar la última hoja de cuotas. Debe existir al menos una."
+    );
+  }
+
+  // =========================
+  // 3. BUSCAR LA HOJA
+  // =========================
+
+  const hoja =
+    hojasCuotas.find(
+      (hoja) =>
+        hoja.properties?.title ===
+        nombreHoja
+    );
+
+  if (!hoja) {
+    throw new Error(
+      `No existe la hoja "${nombreHoja}"`
+    );
+  }
+
+  const sheetId =
+    hoja.properties?.sheetId;
+
+  if (
+    sheetId === undefined
+  ) {
+    throw new Error(
+      `La hoja "${nombreHoja}" no tiene sheetId`
+    );
+  }
+
+  // =========================
+  // 4. ELIMINAR HOJA
+  // =========================
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId:
+      SPREADSHEET_ID,
+
+    requestBody: {
+      requests: [
+        {
+          deleteSheet: {
+            sheetId:
+              Number(sheetId),
+          },
+        },
+      ],
+    },
+  });
+
+  return {
+    anio:
+      anioNumero,
+
+    nombreHoja,
   };
 }

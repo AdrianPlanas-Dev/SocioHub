@@ -7,6 +7,8 @@ import {
   registrarPago,
   modificarPago,
   anularPago,
+  crearCuotasAnio,
+  eliminarCuotasAnio,
 } from "../services/cuotasService.js";
 
 // =========================
@@ -292,6 +294,75 @@ export async function anularPagoController(
       error:
         error.message ??
         "Error anulando el pago",
+    });
+  }
+}
+// =========================
+// CREAR AÑO DE CUOTAS
+// =========================
+
+export async function crearCuotasAnioController(
+  req,
+  res
+) {
+  try {
+    const { anio } = req.body;
+
+    if (anio === undefined) {
+      return res.status(400).json({
+        error:
+          "El año es obligatorio",
+      });
+    }
+
+    const resultado =
+      await crearCuotasAnio(
+        anio
+      );
+
+    res.json(resultado);
+  } catch (error) {
+    console.error(
+      "Error creando año de cuotas:",
+      error
+    );
+
+    res.status(400).json({
+      error:
+        error.message ??
+        "Error creando el año de cuotas",
+    });
+  }
+}
+
+
+// =========================
+// ELIMINAR AÑO DE CUOTAS
+// =========================
+
+export async function eliminarCuotasAnioController(
+  req,
+  res
+) {
+  try {
+    const { anio } = req.params;
+
+    const resultado =
+      await eliminarCuotasAnio(
+        anio
+      );
+
+    res.json(resultado);
+  } catch (error) {
+    console.error(
+      "Error eliminando año de cuotas:",
+      error
+    );
+
+    res.status(400).json({
+      error:
+        error.message ??
+        "Error eliminando el año de cuotas",
     });
   }
 }
