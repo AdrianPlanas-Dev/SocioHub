@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 
 import {
@@ -11,8 +12,12 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  IconButton,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 
+import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
 import PaidRoundedIcon from "@mui/icons-material/PaidRounded";
@@ -50,6 +55,48 @@ const menuItems = [
 ];
 
 export default function MainLayout() {
+  const theme = useTheme();
+
+  const esMovil = useMediaQuery(
+    theme.breakpoints.down("md")
+  );
+
+  const [menuAbierto, setMenuAbierto] =
+    useState(false);
+
+  const contenidoMenu = (
+    <Box
+      sx={{
+        width: drawerWidth,
+      }}
+    >
+      <Toolbar />
+
+      <List>
+        {menuItems.map((item) => (
+          <ListItemButton
+            key={item.path}
+            component={NavLink}
+            to={item.path}
+            onClick={() => {
+              if (esMovil) {
+                setMenuAbierto(false);
+              }
+            }}
+          >
+            <ListItemIcon>
+              {item.icon}
+            </ListItemIcon>
+
+            <ListItemText
+              primary={item.text}
+            />
+          </ListItemButton>
+        ))}
+      </List>
+    </Box>
+  );
+
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -58,66 +105,132 @@ export default function MainLayout() {
       <AppBar
         position="fixed"
         sx={{
-          zIndex: (theme) => theme.zIndex.drawer + 1,
+          zIndex: (theme) =>
+            theme.zIndex.drawer + 1,
         }}
       >
-        <Toolbar>
+        <Toolbar
+          sx={{
+            minHeight: {
+              xs: 60,
+              sm: 64,
+            },
+            px: {
+              xs: 1.5,
+              sm: 2,
+            },
+          }}
+        >
+          {esMovil && (
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={() =>
+                setMenuAbierto(true)
+              }
+              sx={{
+                mr: 1,
+              }}
+              aria-label="Abrir menú"
+            >
+              <MenuRoundedIcon />
+            </IconButton>
+          )}
+
           <Box>
             <Typography
               variant="h6"
-              sx={{ fontWeight: "bold" }}
+              sx={{
+                fontWeight: "bold",
+                fontSize: {
+                  xs: "1.05rem",
+                  sm: "1.25rem",
+                },
+                lineHeight: 1.2,
+              }}
             >
               SocioHub
             </Typography>
 
-            <Typography variant="caption">
+            <Typography
+              variant="caption"
+              sx={{
+                display: {
+                  xs: "none",
+                  sm: "block",
+                },
+              }}
+            >
               Gestión de socios
             </Typography>
           </Box>
         </Toolbar>
       </AppBar>
 
-      {/* Menú lateral */}
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-
-          "& .MuiDrawer-paper": {
+      {/* Menú escritorio */}
+      {!esMovil && (
+        <Drawer
+          variant="permanent"
+          sx={{
             width: drawerWidth,
-            boxSizing: "border-box",
-          },
-        }}
-      >
-        <Toolbar />
+            flexShrink: 0,
 
-        <List>
-          {menuItems.map((item) => (
-            <ListItemButton
-              key={item.path}
-              component={NavLink}
-              to={item.path}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
+            "& .MuiDrawer-paper": {
+              width: drawerWidth,
+              boxSizing: "border-box",
+            },
+          }}
+        >
+          {contenidoMenu}
+        </Drawer>
+      )}
 
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          ))}
-        </List>
-      </Drawer>
+      {/* Menú móvil */}
+      {esMovil && (
+        <Drawer
+          variant="temporary"
+          open={menuAbierto}
+          onClose={() =>
+            setMenuAbierto(false)
+          }
+          ModalProps={{
+            keepMounted: true,
+          }}
+          sx={{
+            "& .MuiDrawer-paper": {
+              width: drawerWidth,
+              boxSizing: "border-box",
+            },
+          }}
+        >
+          {contenidoMenu}
+        </Drawer>
+      )}
 
       {/* Contenido */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: 4,
-          backgroundColor: "#F8FAFC",
+          minWidth: 0,
           minHeight: "100vh",
+          backgroundColor: "#F8FAFC",
+
+          p: {
+            xs: 1.5,
+            sm: 2,
+            md: 4,
+          },
         }}
       >
-        <Toolbar />
+        <Toolbar
+          sx={{
+            minHeight: {
+              xs: 60,
+              sm: 64,
+            },
+          }}
+        />
 
         <Outlet />
       </Box>

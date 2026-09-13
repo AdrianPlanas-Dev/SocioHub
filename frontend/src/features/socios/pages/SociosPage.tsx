@@ -3,8 +3,13 @@ import { useState } from "react";
 import {
   Alert,
   Box,
+  Button,
   Snackbar,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
+
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 
 import PageContainer from "../../../shared/components/PageContainer";
 
@@ -24,6 +29,12 @@ import {
 import { useSocios } from "../hooks/useSocios";
 
 export default function SociosPage() {
+  const theme = useTheme();
+
+  const esMovil = useMediaQuery(
+    theme.breakpoints.down("sm")
+  );
+
   const [selectedSocio, setSelectedSocio] =
     useState<Socio | null>(null);
 
@@ -83,6 +94,36 @@ export default function SociosPage() {
 
   function seleccionarSocio(socio: Socio) {
     setSelectedSocio(socio);
+
+
+    // En móvil, al abrir la ficha,
+    // volvemos automáticamente al principio.
+    if (esMovil) {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+
+
+  }
+
+  // =========================
+  // VOLVER A LA LISTA
+  // =========================
+
+  function volverASocios() {
+    setSelectedSocio(null);
+
+
+    if (esMovil) {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+
+
   }
 
   // =========================
@@ -97,16 +138,12 @@ export default function SociosPage() {
   // =========================
   // ACTUALIZAR DATOS
   // =========================
-  //
-  // Recarga socios + cuotas y
-  // actualiza también la ficha
-  // que esté abierta.
-  //
 
   async function handleActualizar() {
     try {
       const sociosActualizados =
         await recargarSocios();
+
 
       if (selectedSocio) {
         const socioActualizado =
@@ -140,6 +177,8 @@ export default function SociosPage() {
         "error"
       );
     }
+
+
   }
 
   // =========================
@@ -163,12 +202,13 @@ export default function SociosPage() {
             datos
           );
 
+
         setSelectedSocio(
           (socioActual) => {
             if (
               !socioActual ||
               socioActual.numero !==
-                socioEditando.numero
+              socioEditando.numero
             ) {
               return socioActual;
             }
@@ -232,131 +272,108 @@ export default function SociosPage() {
         "error"
       );
     }
+
+
   }
 
-// =========================
-// CERRAR DIALOGO
-// =========================
+  // =========================
+  // CERRAR DIALOGO
+  // =========================
 
-function cerrarDialogo() {
-  setDialogAbierto(false);
-  setSocioEditando(null);
-}
-
-// =========================
-// ELIMINAR SOCIO
-// =========================
-
-async function handleEliminarSocio(
-  socio: Socio
-) {
-  const confirmado = window.confirm(
-    `¿Seguro que quieres eliminar a ${socio.nombre} ${socio.apellidos}?`
-  );
-
-  if (!confirmado) {
-    return;
+  function cerrarDialogo() {
+    setDialogAbierto(false);
+    setSocioEditando(null);
   }
 
-  try {
-    await eliminarSocio(
-      socio.numero
+  // =========================
+  // ELIMINAR SOCIO
+  // =========================
+
+  async function handleEliminarSocio(
+    socio: Socio
+  ) {
+    const confirmado = window.confirm(
+      `¿Seguro que quieres eliminar a ${socio.nombre} ${socio.apellidos}?`
     );
 
-    await recargarSocios();
 
-    if (
-      selectedSocio?.numero ===
-      socio.numero
-    ) {
-      setSelectedSocio(null);
+    if (!confirmado) {
+      return;
     }
 
-    mostrarMensaje(
-      "Socio borrado correctamente"
-    );
+    try {
+      await eliminarSocio(
+        socio.numero
+      );
 
-  } catch (error) {
-    console.error(
-      "Error eliminando socio:",
-      error
-    );
+      await recargarSocios();
 
-    mostrarMensaje(
-      "No se pudo borrar el socio",
-      "error"
-    );
+      if (
+        selectedSocio?.numero ===
+        socio.numero
+      ) {
+        setSelectedSocio(null);
+      }
+
+      mostrarMensaje(
+        "Socio borrado correctamente"
+      );
+
+    } catch (error) {
+      console.error(
+        "Error eliminando socio:",
+        error
+      );
+
+      mostrarMensaje(
+        "No se pudo borrar el socio",
+        "error"
+      );
+    }
+
+
   }
-}
 
-return (
-  <PageContainer
+  // =========================
+  // RENDER
+  // =========================
+
+  return (<PageContainer
     title="Socios"
     subtitle="Gestiona todos los socios de la peña."
   >
+    {
+    /* =====================================================
+MÓVIL: FICHA DEL SOCIO SELECCIONADO
+===================================================== */}
 
-    {/* =========================
-          BARRA DE HERRAMIENTAS
-          ========================= */}
 
-    <SociosToolbar
-      busqueda={busqueda}
-      campoBusqueda={campoBusqueda}
-      onBusquedaChange={setBusqueda}
-      onCampoBusquedaChange={
-        setCampoBusqueda
-      }
-      onNuevoSocio={abrirNuevoSocio}
-      onActualizar={handleActualizar}
-    />
-
-    {/* =========================
-          ZONA DE TRABAJO
-          ========================= */}
-
-    <Box
-      sx={{
-        display: "flex",
-        gap: 3,
-        height: "calc(100vh - 300px)",
-        minHeight: 450,
-        alignItems: "stretch",
-      }}
-    >
-
-      {/* =========================
-            TABLA
-            ========================= */}
-
+    {esMovil && selectedSocio ? (
       <Box
         sx={{
-          flex: 2,
-          minWidth: 0,
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
+          width: "100%",
+          mt: 1,
         }}
       >
-        <SociosTable
-          socios={socios}
-          onSelect={seleccionarSocio}
-          onEdit={abrirEditarSocio}
-          onDelete={handleEliminarSocio}
-        />
-      </Box>
+        {/* BOTÓN VOLVER */}
 
-      {/* =========================
-            FICHA DEL SOCIO
-            ========================= */}
+        <Button
+          variant="outlined"
+          startIcon={
+            <ArrowBackRoundedIcon />
+          }
+          onClick={volverASocios}
+          sx={{
+            mb: 2,
+            width: "100%",
+            justifyContent: "flex-start",
+          }}
+        >
+          Volver a socios
+        </Button>
 
-      <Box
-        sx={{
-          flex: 1,
-          minWidth: 300,
-          overflow: "auto",
-          height: "100%",
-        }}
-      >
+        {/* FICHA */}
+
         <SocioPanel
           socio={selectedSocio}
           onEditar={() => {
@@ -371,12 +388,127 @@ return (
           }
         />
       </Box>
+    ) : (
+      <>
+        {/* =====================================================
+          BARRA DE HERRAMIENTAS
+          ===================================================== */}
 
-    </Box>
+        <SociosToolbar
+          busqueda={busqueda}
+          campoBusqueda={campoBusqueda}
+          onBusquedaChange={setBusqueda}
+          onCampoBusquedaChange={
+            setCampoBusqueda
+          }
+          onNuevoSocio={
+            abrirNuevoSocio
+          }
+          onActualizar={
+            handleActualizar
+          }
+        />
 
-    {/* =========================
-          DIALOG CREAR / EDITAR
-          ========================= */}
+        {/* =====================================================
+          ZONA DE TRABAJO
+          ===================================================== */}
+
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: {
+              xs: "column",
+              sm: "row",
+            },
+            gap: {
+              xs: 2,
+              sm: 3,
+            },
+            height: {
+              xs: "auto",
+              sm: "calc(100vh - 300px)",
+            },
+            minHeight: {
+              xs: 0,
+              sm: 450,
+            },
+            alignItems: "stretch",
+            width: "100%",
+          }}
+        >
+          {/* =================================================
+            LISTA / TABLA DE SOCIOS
+            ================================================= */}
+
+          <Box
+            sx={{
+              flex: {
+                xs: "none",
+                sm: 2,
+              },
+              width: {
+                xs: "100%",
+                sm: "auto",
+              },
+              minWidth: 0,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <SociosTable
+              socios={socios}
+              onSelect={
+                seleccionarSocio
+              }
+              onEdit={
+                abrirEditarSocio
+              }
+              onDelete={
+                handleEliminarSocio
+              }
+            />
+          </Box>
+
+          {/* =================================================
+            FICHA EN PC
+
+            En móvil no se muestra aquí.
+            En móvil aparece arriba cuando seleccionamos
+            un socio.
+            ================================================= */}
+
+          {!esMovil && (
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                overflow: "auto",
+                height: "100%",
+              }}
+            >
+              <SocioPanel
+                socio={selectedSocio}
+                onEditar={() => {
+                  if (selectedSocio) {
+                    abrirEditarSocio(
+                      selectedSocio
+                    );
+                  }
+                }}
+                onPagoRegistrado={
+                  handleActualizar
+                }
+              />
+            </Box>
+          )}
+        </Box>
+      </>
+    )}
+
+    {/* =====================================================
+      DIALOG CREAR / EDITAR
+      ===================================================== */}
 
     <SocioFormDialog
       open={dialogAbierto}
@@ -385,9 +517,9 @@ return (
       onSave={handleGuardarSocio}
     />
 
-    {/* =========================
-          AVISOS
-          ========================= */}
+    {/* =====================================================
+      AVISOS
+      ===================================================== */}
 
     <Snackbar
       open={snackbarAbierto}
@@ -409,7 +541,8 @@ return (
         {mensaje}
       </Alert>
     </Snackbar>
-
   </PageContainer>
-);
+
+
+  );
 }

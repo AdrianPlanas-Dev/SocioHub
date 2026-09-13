@@ -63,22 +63,38 @@ export default function SociosToolbar({
     <Box
       sx={{
         display: "flex",
-        gap: 2,
-        mt: 2,
-        mb: 3,
+        gap: {
+          xs: 1,
+          sm: 2,
+        },
+        mt: {
+          xs: 1,
+          sm: 2,
+        },
+        mb: {
+          xs: 2,
+          sm: 3,
+        },
         flexWrap: "wrap",
         alignItems: "center",
+        width: "100%",
       }}
     >
-
       {/* =========================
-          BUSCAR POR
-          ========================= */}
+BUSCAR POR
+========================= */}
 
       <FormControl
         size="small"
         sx={{
-          minWidth: 190,
+          width: {
+            xs: "100%",
+            sm: "auto",
+          },
+          minWidth: {
+            xs: 0,
+            sm: 190,
+          },
         }}
       >
         <InputLabel>
@@ -108,8 +124,8 @@ export default function SociosToolbar({
       </FormControl>
 
       {/* =========================
-          BUSCADOR
-          ========================= */}
+      BUSCADOR
+  ========================= */}
 
       <TextField
         placeholder="Buscar..."
@@ -122,13 +138,20 @@ export default function SociosToolbar({
         }
         sx={{
           flex: 1,
-          minWidth: 280,
+          width: {
+            xs: "100%",
+            sm: "auto",
+          },
+          minWidth: {
+            xs: 0,
+            sm: 280,
+          },
         }}
       />
 
       {/* =========================
-          NUEVO SOCIO
-          ========================= */}
+      NUEVO SOCIO
+  ========================= */}
 
       <Button
         variant="contained"
@@ -136,13 +159,19 @@ export default function SociosToolbar({
           <AddRoundedIcon />
         }
         onClick={onNuevoSocio}
+        sx={{
+          width: {
+            xs: "100%",
+            sm: "auto",
+          },
+        }}
       >
         Nuevo socio
       </Button>
 
       {/* =========================
-          ACTUALIZAR
-          ========================= */}
+      ACTUALIZAR
+  ========================= */}
 
       <Button
         variant="outlined"
@@ -150,10 +179,16 @@ export default function SociosToolbar({
           <RefreshRoundedIcon />
         }
         onClick={onActualizar}
+        sx={{
+          width: {
+            xs: "100%",
+            sm: "auto",
+          },
+        }}
       >
         Actualizar
       </Button>
-
     </Box>
+
   );
 }

@@ -19,7 +19,15 @@ export default function PageContainer({
         subtitle={subtitle}
       />
 
-      <Box sx={{ mt: 50 }}>
+      <Box
+        sx={{
+          mt: {
+            xs: 1,
+            sm: 2,
+            md: 3,
+          },
+        }}
+      >
         {children}
       </Box>
     </Box>

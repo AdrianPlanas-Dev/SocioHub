@@ -5,6 +5,8 @@ import {
   Grid,
   Snackbar,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 
 import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
@@ -22,6 +24,12 @@ import {
 } from "../../../services/api";
 
 export default function DashboardPage() {
+  const theme = useTheme();
+
+  const esMovil = useMediaQuery(
+    theme.breakpoints.down("sm")
+  );
+
   // =========================
   // ESTADÍSTICAS
   // =========================
@@ -136,6 +144,8 @@ export default function DashboardPage() {
     }
 
     cargarDashboard();
+
+
   }, []);
 
   // =========================
@@ -148,8 +158,7 @@ export default function DashboardPage() {
       value: cargando
         ? "..."
         : totalSocios,
-      icon: (
-        <GroupsRoundedIcon color="primary" />
+      icon: (<GroupsRoundedIcon color="primary" />
       ),
     },
     {
@@ -157,8 +166,7 @@ export default function DashboardPage() {
       value: cargando
         ? "..."
         : totalPagados,
-      icon: (
-        <PaidRoundedIcon color="success" />
+      icon: (<PaidRoundedIcon color="success" />
       ),
     },
     {
@@ -166,8 +174,7 @@ export default function DashboardPage() {
       value: cargando
         ? "..."
         : totalPendientes,
-      icon: (
-        <WarningAmberRoundedIcon color="warning" />
+      icon: (<WarningAmberRoundedIcon color="warning" />
       ),
     },
     {
@@ -175,8 +182,7 @@ export default function DashboardPage() {
       value: cargando
         ? "..."
         : `${totalRecaudado.toFixed(2)} €`,
-      icon: (
-        <EuroRoundedIcon color="primary" />
+      icon: (<EuroRoundedIcon color="primary" />
       ),
     },
   ];
@@ -185,23 +191,33 @@ export default function DashboardPage() {
   // RENDER
   // =========================
 
-  return (
-    <PageContainer
-      title="Inicio"
-      subtitle="Resumen general de la peña."
+  return (<PageContainer
+    title="Inicio"
+    subtitle="Resumen general de la peña."
+  >
+    <Typography
+      variant={esMovil ? "subtitle1" : "h6"}
+      sx={{
+        mb: {
+          xs: 2,
+          sm: 3,
+        },
+        fontWeight: 600,
+      }}
     >
-      <Typography
-        variant="h6"
-        sx={{ mb: 4 }}
-      >
-        Bienvenido a SocioHub 👋
-      </Typography>
+      Bienvenido a SocioHub 👋 </Typography>
 
-      <Grid
-        container
-        spacing={3}
-      >
-        {estadisticas.map((stat) => (
+    < Grid
+      container
+      spacing={{
+        xs: 1.5,
+        sm: 2,
+        md: 3,
+      }
+      }
+    >
+      {
+        estadisticas.map((stat) => (
           <Grid
             key={stat.title}
             size={{
@@ -216,30 +232,32 @@ export default function DashboardPage() {
               icon={stat.icon}
             />
           </Grid>
-        ))}
-      </Grid>
+        ))
+      }
+    </Grid >
 
-      {/* =========================
-          AVISO DE ERROR
-      ========================= */}
+    {/* =========================
+      AVISO DE ERROR
+  ========================= */}
 
-      <Snackbar
-        open={Boolean(error)}
-        autoHideDuration={5000}
+    < Snackbar
+      open={Boolean(error)}
+      autoHideDuration={5000}
+      onClose={() => setError("")}
+      anchorOrigin={{
+        vertical: "bottom",
+        horizontal: "right",
+      }}
+    >
+      <Alert
+        severity="error"
+        variant="filled"
         onClose={() => setError("")}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "right",
-        }}
       >
-        <Alert
-          severity="error"
-          variant="filled"
-          onClose={() => setError("")}
-        >
-          {error}
-        </Alert>
-      </Snackbar>
-    </PageContainer>
+        {error}
+      </Alert>
+    </Snackbar >
+  </PageContainer >
+
   );
 }
