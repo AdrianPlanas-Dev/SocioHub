@@ -28,20 +28,22 @@ export default function SocioDrawer({
       anchor="right"
       open={open}
       onClose={onClose}
-      PaperProps={{
-        sx: {
-          width: 420,
-          mt: "64px",
-          height: "calc(100% - 64px)",
+      slotProps={{
+        paper: {
+          sx: {
+            width: 420,
+            mt: "64px",
+            height: "calc(100% - 64px)",
+          },
         },
       }}
     >
-        <Box
+      <Box
         sx={{
-            p: 3,
-            pt: 10,
+          p: 3,
+          pt: 10,
         }}
-        >
+      >
         {/* Cabecera */}
 
         <Box
@@ -56,7 +58,7 @@ export default function SocioDrawer({
 
           <Typography
             variant="h5"
-            fontWeight="bold"
+            sx={{ fontWeight: "bold" }}
           >
             {socio
               ? `${socio.nombre} ${socio.apellidos}`
@@ -67,10 +69,10 @@ export default function SocioDrawer({
         <Typography
           variant="body2"
           color="text.secondary"
-          mb={3}
+          sx={{ mb: 3 }}
         >
           Socio nº {socio?.numero ?? "-"}
-          
+
         </Typography>
 
         <Divider sx={{ mb: 3 }} />

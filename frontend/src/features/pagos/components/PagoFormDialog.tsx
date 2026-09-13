@@ -146,13 +146,7 @@ export default function PagoFormDialog({
             value={numero}
             label="Socio"
             onChange={(e) =>
-              setNumero(
-                e.target.value === ""
-                  ? ""
-                  : Number(
-                      e.target.value
-                    )
-              )
+              setNumero(Number(e.target.value))
             }
           >
             {socios.map((socio) => (

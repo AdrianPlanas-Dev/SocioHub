@@ -104,4 +104,5 @@ router.get(
   "/cuotas/:anio",
   obtenerCuotas
 );
+
 export default router;

@@ -306,6 +306,9 @@ export default function SocioPanel({
   // =========================
 
   async function guardarPago() {
+    if (!socio) {
+      return;
+    }
     setErrorPago("");
 
     if (anioPago === "") {
@@ -393,7 +396,7 @@ export default function SocioPanel({
           <Box>
             <Typography
               variant="h5"
-              fontWeight="bold"
+              sx={{ fontWeight: "bold" }}
             >
               {socio.nombre}
             </Typography>
@@ -442,8 +445,7 @@ export default function SocioPanel({
         <Typography
           variant="subtitle2"
           color="primary"
-          fontWeight="bold"
-          sx={{ mb: 2 }}
+          sx={{ mb: 2, fontWeight: "bold" }}
         >
           INFORMACIÓN PERSONAL
         </Typography>
@@ -506,12 +508,10 @@ export default function SocioPanel({
         {/* =========================
             ESTADO DE CUOTAS
         ========================= */}
-
         <Typography
           variant="subtitle2"
           color="primary"
-          fontWeight="bold"
-          sx={{ mb: 2 }}
+          sx={{ mb: 2, fontWeight: "bold" }}
         >
           ESTADO DE CUOTAS
         </Typography>
@@ -548,8 +548,7 @@ export default function SocioPanel({
               <Box sx={{ mt: 2 }}>
                 <Typography
                   variant="body2"
-                  fontWeight="bold"
-                  sx={{ mb: 1 }}
+                  sx={{ mb: 1, fontWeight: "bold" }}
                 >
                   Meses pendientes:
                 </Typography>
@@ -613,8 +612,7 @@ export default function SocioPanel({
             <Typography
               variant="subtitle2"
               color="primary"
-              fontWeight="bold"
-              sx={{ mb: 2 }}
+              sx={{ mb: 2, fontWeight: "bold" }}
             >
               REGISTRAR PAGO
             </Typography>

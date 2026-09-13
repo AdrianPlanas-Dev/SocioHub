@@ -19,7 +19,7 @@ export default function PageContainer({
         subtitle={subtitle}
       />
 
-      <Box mt={50}>
+      <Box sx={{ mt: 50 }}>
         {children}
       </Box>
     </Box>

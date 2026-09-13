@@ -7,7 +7,9 @@ import {
 
 import type { Pago } from "../types/Pago";
 
-const API_URL = "http://localhost:3000";
+import {
+  obtenerPagos,
+} from "../../../services/api";
 
 export function usePagos() {
   const [pagos, setPagos] = useState<Pago[]>([]);
@@ -21,20 +23,10 @@ export function usePagos() {
       setCargando(true);
       setError(null);
 
-      const response = await fetch(
-        `${API_URL}/cuotas/pagos`
-      );
+      const data =
+        await obtenerPagos();
 
-      if (!response.ok) {
-        throw new Error(
-          "No se pudieron obtener los pagos"
-        );
-      }
-
-      const data: Pago[] =
-        await response.json();
-
-      setPagos(data);
+      setPagos(data as Pago[]);
     } catch (error) {
       console.error(
         "Error cargando pagos:",

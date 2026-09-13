@@ -192,7 +192,7 @@ export default function DashboardPage() {
     >
       <Typography
         variant="h6"
-        mb={4}
+        sx={{ mb: 4 }}
       >
         Bienvenido a SocioHub 👋
       </Typography>

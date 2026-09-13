@@ -27,9 +27,11 @@ export default function StatCard({
     >
       <CardContent>
         <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
         >
           <Typography
             variant="subtitle1"
@@ -39,24 +41,26 @@ export default function StatCard({
           </Typography>
 
           <Box
-  sx={{
-    width: 50,
-    height: 50,
-    borderRadius: "50%",
-    backgroundColor: "#EFF6FF",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  }}
->
-  {icon}
-</Box>
+            sx={{
+              width: 50,
+              height: 50,
+              borderRadius: "50%",
+              backgroundColor: "#EFF6FF",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {icon}
+          </Box>
         </Box>
 
         <Typography
           variant="h4"
-          fontWeight="bold"
-          mt={3}
+          sx={{
+            fontWeight: "bold",
+            mt: 3,
+          }}
         >
           {value}
         </Typography>

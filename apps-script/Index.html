@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>SocioHub</title>
+</head>
+
+<body>
+
+  <div id="root"></div>
+
+  <script>
+    const base64 = <?!= JSON.stringify(include("Bundle")) ?>;
+
+    try {
+      console.log("BASE64:", base64.substring(0, 100));
+      console.log("BASE64 length:", base64.length);
+
+      const binary = atob(base64);
+
+      const bytes = new Uint8Array(binary.length);
+
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+
+      const js = new TextDecoder("utf-8").decode(bytes);
+
+      console.log("JS decodificado:", js.substring(0, 100));
+      console.log("JS length:", js.length);
+
+      const script = document.createElement("script");
+
+      script.textContent = js;
+
+      document.body.appendChild(script);
+
+    } catch (error) {
+
+      console.error("Error cargando SocioHub:", error);
+
+      document.body.innerHTML = `
+        <pre style="
+          padding:30px;
+          color:red;
+          white-space:pre-wrap;
+        ">${error.stack || error.message}</pre>
+      `;
+    }
+  </script>
+
+</body>
+
+</html>

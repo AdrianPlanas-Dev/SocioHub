@@ -56,13 +56,13 @@ export default function SocioFormDialog({
 
   useEffect(() => {
     if (socio) {
-      setNombre(socio.nombre ?? "");
-      setApellidos(socio.apellidos ?? "");
-      setDni(socio.dni ?? "");
-      setTelefono(socio.telefono ?? "");
-      setDireccion(socio.direccion ?? "");
+      setNombre(String(socio.nombre ?? ""));
+      setApellidos(String(socio.apellidos ?? ""));
+      setDni(String(socio.dni ?? ""));
+      setTelefono(String(socio.telefono ?? ""));
+      setDireccion(String(socio.direccion ?? ""));
       setFechaNacimiento(
-        socio.fechaNacimiento ?? ""
+        String(socio.fechaNacimiento ?? "")
       );
       setEstado(
         socio.estado ?? "Pendiente"
@@ -221,8 +221,8 @@ export default function SocioFormDialog({
           onChange={(e) =>
             setEstado(
               e.target.value as
-                | "Pagado"
-                | "Pendiente"
+              | "Pagado"
+              | "Pendiente"
             )
           }
         >

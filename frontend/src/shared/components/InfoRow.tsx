@@ -39,7 +39,7 @@ export default function InfoRow({
           {label}
         </Typography>
 
-        <Typography fontWeight={500}>
+        <Typography sx={{ fontWeight: 500 }}>
           {value}
         </Typography>
       </Box>

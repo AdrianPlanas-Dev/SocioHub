@@ -10,10 +10,10 @@ export default function PageHeader({
   subtitle,
 }: PageHeaderProps) {
   return (
-    <Box mb={4}>
+    <Box sx={{ mb: 4 }}>
       <Typography
         variant="h4"
-        fontWeight="bold"
+        sx={{ fontWeight: "bold" }}
       >
         {title}
       </Typography>
@@ -21,7 +21,7 @@ export default function PageHeader({
       {subtitle && (
         <Typography
           color="text.secondary"
-          mt={1}
+          sx={{ mt: 2 }}
         >
           {subtitle}
         </Typography>

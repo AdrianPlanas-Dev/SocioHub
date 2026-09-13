@@ -28,7 +28,7 @@ export default function SectionCard({
         <Typography
           variant="subtitle2"
           color="primary"
-          fontWeight="bold"
+          sx={{ fontWeight: "bold" }}
           gutterBottom
         >
           {title}

@@ -86,26 +86,33 @@ export function useSocios() {
         const estados =
           await obtenerEstadosSocios();
 
-        const estadosPorSocio =
-          new Map(
-            estados.map(
-              (estado: {
-                numero: number;
-                estado:
-                | "Pagado"
-                | "Pendiente";
-                mesesPendientes: {
-                  anio: number;
-                  mes: number;
-                  nombreMes: string;
-                }[];
-              }) => [
-                  estado.numero,
-                  estado,
-                ]
-            )
-          );
-
+        const estadosPorSocio = new Map<
+          number,
+          {
+            numero: number;
+            estado: "Pagado" | "Pendiente";
+            mesesPendientes: {
+              anio: number;
+              mes: number;
+              nombreMes: string;
+            }[];
+          }
+        >(
+          estados.map(
+            (estado: {
+              numero: number;
+              estado: "Pagado" | "Pendiente";
+              mesesPendientes: {
+                anio: number;
+                mes: number;
+                nombreMes: string;
+              }[];
+            }) => [
+                estado.numero,
+                estado,
+              ]
+          )
+        );
         const sociosConEstado =
           sociosUnicos.map(
             (socio: Socio) => {
@@ -175,6 +182,7 @@ export function useSocios() {
   // FILTROS
   // =========================
 
+
   const sociosFiltrados =
     useMemo(() => {
       if (!busqueda.trim()) {
@@ -186,6 +194,21 @@ export function useSocios() {
 
       return socios.filter(
         (socio) => {
+          const numero =
+            String(socio.numero ?? "").toLowerCase();
+
+          const nombre =
+            String(socio.nombre ?? "").toLowerCase();
+
+          const apellidos =
+            String(socio.apellidos ?? "").toLowerCase();
+
+          const telefono =
+            String(socio.telefono ?? "").toLowerCase();
+
+          const estado =
+            String(socio.estadoCuotas ?? "").toLowerCase();
+
           switch (campoBusqueda) {
 
             // =========================
@@ -193,48 +216,35 @@ export function useSocios() {
             // =========================
 
             case "numero":
-              return socio.numero
-                .toString()
-                .includes(texto);
+              return numero.includes(texto);
 
             // =========================
             // NOMBRE
             // =========================
 
             case "nombre":
-              return socio.nombre
-                .toLowerCase()
-                .includes(texto);
+              return nombre.includes(texto);
 
             // =========================
             // APELLIDOS
             // =========================
 
             case "apellidos":
-              return socio.apellidos
-                .toLowerCase()
-                .includes(texto);
+              return apellidos.includes(texto);
 
             // =========================
             // TELÉFONO
             // =========================
 
             case "telefono":
-              return socio.telefono
-                .toLowerCase()
-                .includes(texto);
+              return telefono.includes(texto);
 
             // =========================
             // ESTADO
             // =========================
 
             case "estado":
-              return (
-                socio.estadoCuotas
-                  ?.toLowerCase()
-                  .includes(texto) ??
-                false
-              );
+              return estado.includes(texto);
 
             // =========================
             // TODOS
@@ -242,27 +252,11 @@ export function useSocios() {
 
             default:
               return (
-                socio.numero
-                  .toString()
-                  .includes(texto) ||
-
-                socio.nombre
-                  .toLowerCase()
-                  .includes(texto) ||
-
-                socio.apellidos
-                  .toLowerCase()
-                  .includes(texto) ||
-
-                socio.telefono
-                  .toLowerCase()
-                  .includes(texto) ||
-
-                socio.estadoCuotas
-                  ?.toLowerCase()
-                  .includes(texto) ||
-
-                false
+                numero.includes(texto) ||
+                nombre.includes(texto) ||
+                apellidos.includes(texto) ||
+                telefono.includes(texto) ||
+                estado.includes(texto)
               );
           }
         }

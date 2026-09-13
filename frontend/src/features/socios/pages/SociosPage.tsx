@@ -193,12 +193,28 @@ export default function SociosPage() {
         const nuevoSocio =
           await crearSocio(datos);
 
-        await recargarSocios();
+        const sociosActualizados =
+          await recargarSocios();
+
+        const socioConEstado =
+          sociosActualizados.find(
+            (socio: Socio) =>
+              socio.numero ===
+              nuevoSocio.numero
+          );
 
         setDialogAbierto(false);
         setSocioEditando(null);
 
-        setSelectedSocio(nuevoSocio);
+        if (socioConEstado) {
+          setSelectedSocio(
+            socioConEstado
+          );
+        } else {
+          setSelectedSocio(
+            nuevoSocio
+          );
+        }
 
         mostrarMensaje(
           "Socio creado correctamente"
@@ -218,182 +234,182 @@ export default function SociosPage() {
     }
   }
 
-  // =========================
-  // CERRAR DIALOGO
-  // =========================
+// =========================
+// CERRAR DIALOGO
+// =========================
 
-  function cerrarDialogo() {
-    setDialogAbierto(false);
-    setSocioEditando(null);
+function cerrarDialogo() {
+  setDialogAbierto(false);
+  setSocioEditando(null);
+}
+
+// =========================
+// ELIMINAR SOCIO
+// =========================
+
+async function handleEliminarSocio(
+  socio: Socio
+) {
+  const confirmado = window.confirm(
+    `¿Seguro que quieres eliminar a ${socio.nombre} ${socio.apellidos}?`
+  );
+
+  if (!confirmado) {
+    return;
   }
 
-  // =========================
-  // ELIMINAR SOCIO
-  // =========================
-
-  async function handleEliminarSocio(
-    socio: Socio
-  ) {
-    const confirmado = window.confirm(
-      `¿Seguro que quieres eliminar a ${socio.nombre} ${socio.apellidos}?`
+  try {
+    await eliminarSocio(
+      socio.numero
     );
 
-    if (!confirmado) {
-      return;
+    await recargarSocios();
+
+    if (
+      selectedSocio?.numero ===
+      socio.numero
+    ) {
+      setSelectedSocio(null);
     }
 
-    try {
-      await eliminarSocio(
-        socio.numero
-      );
+    mostrarMensaje(
+      "Socio borrado correctamente"
+    );
 
-      await recargarSocios();
+  } catch (error) {
+    console.error(
+      "Error eliminando socio:",
+      error
+    );
 
-      if (
-        selectedSocio?.numero ===
-        socio.numero
-      ) {
-        setSelectedSocio(null);
-      }
-
-      mostrarMensaje(
-        "Socio borrado correctamente"
-      );
-
-    } catch (error) {
-      console.error(
-        "Error eliminando socio:",
-        error
-      );
-
-      mostrarMensaje(
-        "No se pudo borrar el socio",
-        "error"
-      );
-    }
+    mostrarMensaje(
+      "No se pudo borrar el socio",
+      "error"
+    );
   }
+}
 
-  return (
-    <PageContainer
-      title="Socios"
-      subtitle="Gestiona todos los socios de la peña."
-    >
+return (
+  <PageContainer
+    title="Socios"
+    subtitle="Gestiona todos los socios de la peña."
+  >
 
-      {/* =========================
+    {/* =========================
           BARRA DE HERRAMIENTAS
           ========================= */}
 
-      <SociosToolbar
-        busqueda={busqueda}
-        campoBusqueda={campoBusqueda}
-        onBusquedaChange={setBusqueda}
-        onCampoBusquedaChange={
-          setCampoBusqueda
-        }
-        onNuevoSocio={abrirNuevoSocio}
-        onActualizar={handleActualizar}
-      />
+    <SociosToolbar
+      busqueda={busqueda}
+      campoBusqueda={campoBusqueda}
+      onBusquedaChange={setBusqueda}
+      onCampoBusquedaChange={
+        setCampoBusqueda
+      }
+      onNuevoSocio={abrirNuevoSocio}
+      onActualizar={handleActualizar}
+    />
 
-      {/* =========================
+    {/* =========================
           ZONA DE TRABAJO
           ========================= */}
 
-      <Box
-        sx={{
-          display: "flex",
-          gap: 3,
-          height: "calc(100vh - 300px)",
-          minHeight: 450,
-          alignItems: "stretch",
-        }}
-      >
+    <Box
+      sx={{
+        display: "flex",
+        gap: 3,
+        height: "calc(100vh - 300px)",
+        minHeight: 450,
+        alignItems: "stretch",
+      }}
+    >
 
-        {/* =========================
+      {/* =========================
             TABLA
             ========================= */}
 
-        <Box
-          sx={{
-            flex: 2,
-            minWidth: 0,
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <SociosTable
-            socios={socios}
-            onSelect={seleccionarSocio}
-            onEdit={abrirEditarSocio}
-            onDelete={handleEliminarSocio}
-          />
-        </Box>
-
-        {/* =========================
-            FICHA DEL SOCIO
-            ========================= */}
-
-        <Box
-          sx={{
-            flex: 1,
-            minWidth: 300,
-            overflow: "auto",
-            height: "100%",
-          }}
-        >
-          <SocioPanel
-            socio={selectedSocio}
-            onEditar={() => {
-              if (selectedSocio) {
-                abrirEditarSocio(
-                  selectedSocio
-                );
-              }
-            }}
-            onPagoRegistrado={
-              handleActualizar
-            }
-          />
-        </Box>
-
+      <Box
+        sx={{
+          flex: 2,
+          minWidth: 0,
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <SociosTable
+          socios={socios}
+          onSelect={seleccionarSocio}
+          onEdit={abrirEditarSocio}
+          onDelete={handleEliminarSocio}
+        />
       </Box>
 
       {/* =========================
+            FICHA DEL SOCIO
+            ========================= */}
+
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 300,
+          overflow: "auto",
+          height: "100%",
+        }}
+      >
+        <SocioPanel
+          socio={selectedSocio}
+          onEditar={() => {
+            if (selectedSocio) {
+              abrirEditarSocio(
+                selectedSocio
+              );
+            }
+          }}
+          onPagoRegistrado={
+            handleActualizar
+          }
+        />
+      </Box>
+
+    </Box>
+
+    {/* =========================
           DIALOG CREAR / EDITAR
           ========================= */}
 
-      <SocioFormDialog
-        open={dialogAbierto}
-        socio={socioEditando}
-        onClose={cerrarDialogo}
-        onSave={handleGuardarSocio}
-      />
+    <SocioFormDialog
+      open={dialogAbierto}
+      socio={socioEditando}
+      onClose={cerrarDialogo}
+      onSave={handleGuardarSocio}
+    />
 
-      {/* =========================
+    {/* =========================
           AVISOS
           ========================= */}
 
-      <Snackbar
-        open={snackbarAbierto}
-        autoHideDuration={3500}
+    <Snackbar
+      open={snackbarAbierto}
+      autoHideDuration={3500}
+      onClose={cerrarMensaje}
+      anchorOrigin={{
+        vertical: "bottom",
+        horizontal: "right",
+      }}
+    >
+      <Alert
         onClose={cerrarMensaje}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "right",
+        severity={tipoMensaje}
+        variant="filled"
+        sx={{
+          width: "100%",
         }}
       >
-        <Alert
-          onClose={cerrarMensaje}
-          severity={tipoMensaje}
-          variant="filled"
-          sx={{
-            width: "100%",
-          }}
-        >
-          {mensaje}
-        </Alert>
-      </Snackbar>
+        {mensaje}
+      </Alert>
+    </Snackbar>
 
-    </PageContainer>
-  );
+  </PageContainer>
+);
 }
